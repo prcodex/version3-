@@ -252,6 +252,13 @@ python -m m3xa_souls.assembler --product m3xa --tags iran --bedrock-json   # cac
    `dist/soul_m3xabr_compiled.md` on every merge to main; Gateway keeps loading one file.
    (Bridge mode until Gateway supports multi-file assembly.)
 
+## Routing & classification
+
+See **[docs/ROUTING.md](docs/ROUTING.md)** for the full classification +
+routing pipeline: how the soul_classifier (Haiku, JSON output) and
+`router.py` (deterministic Python) work together, the tag vocabulary,
+worked examples, and failure modes.
+
 ## Corrections pipeline
 Rubric-collector auto-detections land in `corrections/candidates.jsonl` — never in a live
 soul. Promotion requires human approval and rewrites the lesson as a POSITIVE rule in the
