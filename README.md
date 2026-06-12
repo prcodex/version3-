@@ -18,7 +18,7 @@ position-aware layered assembly targeting ≤2.6K instruction tokens worst case.
 flowchart TB
     subgraph RUNTIME["<b>⚡ Runtime — per query (Gateway)</b>"]
         direction TB
-        U(["<b>👤 User query</b><br/><b>Telegram / Web</b>"]) --> CLS["<b>soul_classifier</b><br/><b>emits locale + tags</b><br/>iran · brazilbrief<br/>polymarket_data · price_action"]
+        U(["<b>👤 User query</b><br/><b>Telegram / Web</b>"]) --> CLS["<b>soul_classifier</b><br/><b>emits product + tags</b><br/>m3xa · m3xabr<br/>iran · polymarket_data · price_action"]
         CLS --> RTR["<b>router.py</b><br/><b>tags → modules</b><br/>priority: geo &gt; brief &gt; pm &gt; charts<br/><b>max 2 modules</b>"]
         RTR --> ASM["<b>assembler.py</b><br/><b>position-aware concatenation</b><br/>+ token report"]
         ENT["<b>entity_*.md cards</b><br/><b>JIT injection</b> — only sources<br/>present in retrieved data"] --> FEED
@@ -27,14 +27,14 @@ flowchart TB
         HAIKU --> TG(["<b>📱 Telegram response</b>"])
     end
 
-    subgraph ORDER["<b>🧩 Assembly order — worst case 1,886 tok measured (budget 2,600)</b>"]
+    subgraph ORDER["<b>🧩 Assembly order — worst case 2,130 tok m3xa / 1,853 tok m3xabr (budget 2,600)</b>"]
         direction TB
-        C1["<b>1. {product}/souls/core.md</b><br/><b>712 tok</b><br/>identity · grounding · time · citation"]
-        C2["<b>2. m3xa overlay 376 tok</b><br/><b>m3xabr overlay 344 tok</b><br/>source tiers · Brazil hard filter<br/>identity rules"]
-        C3["<b>3. conditional modules — max 2</b><br/>geo 302 · polymarket 139<br/>charts 112 (brazilbrief disabled)"]
-        C4["<b>4. {product}/souls/examples.md</b><br/><b>196 tok</b><br/>3 canonical few-shots"]
+        C1["<b>1. {product}/souls/core.md</b><br/><b>m3xa 830 · m3xabr 835 tok</b><br/>identity · grounding · proactive patterns<br/>time · citation"]
+        C2["<b>2. {product}/souls/overlay.md</b><br/><b>m3xa 468 · m3xabr 489 tok</b><br/>source tiers (named + cited)<br/>Brazil hard filter · identity rules"]
+        C3["<b>3. conditional modules — max 2</b><br/>geo 336 (m3xa only, schema-constrained)<br/>polymarket 139 · charts 112<br/>(brazilbrief disabled)"]
+        C4["<b>4. {product}/souls/examples.md</b><br/><b>m3xa 196 · m3xabr 160 tok</b><br/>3 canonical few-shots"]
         C5["<b>5. AGENT_AND_DATA_CONTEXT</b><br/>placeholder<br/>Gateway inserts live feed here"]
-        C6["<b>6. m3xa output 161 tok</b><br/><b>m3xabr output 142 tok</b><br/><b>format rules LAST</b> — recency effect"]
+        C6["<b>6. {product}/souls/output.md</b><br/><b>m3xa 161 · m3xabr 142 tok</b><br/><b>format rules LAST</b> — recency effect"]
         C1 --> C2 --> C3 --> C4 --> C5 --> C6
     end
     ASM -. <b>builds</b> .-> C1
@@ -43,8 +43,8 @@ flowchart TB
         direction TB
         GH["<b>GitHub</b><br/>prcodex/version3-"] --> ACT["<b>GitHub Actions CI</b>"]
         ACT --> VAL["<b>validate.py</b><br/>budgets · duplicate rules<br/>forbidden patterns"]
-        ACT --> TST["<b>pytest</b><br/>9 tests"]
-        ACT --> CMP["<b>compiler.py → dist/</b><br/>soul_global_compiled ~2.0K tok<br/>soul_brazil_compiled ~2.2K tok"]
+        ACT --> TST["<b>pytest</b><br/>14 tests"]
+        ACT --> CMP["<b>compiler.py → dist/</b><br/>soul_m3xa_compiled ~2.1K tok<br/>soul_m3xabr_compiled ~1.8K tok"]
         CMP --> DEP["<b>deploy</b><br/>sync dist/ → House store<br/>bridge mode until Gateway<br/>assembles natively"]
         RC["<b>rubric-collector</b><br/>auto-detections"] --> CAND["<b>corrections/candidates.jsonl</b><br/>status: candidate<br/><b>NEVER touches a live soul</b>"]
         CAND -- "<b>human PROMOTE</b><br/>→ positive rule" --> MODS["<b>owning module</b><br/>in souls/"]
