@@ -254,15 +254,19 @@ python -m m3xa_souls.assembler --product m3xa --tags iran --bedrock-json   # cac
 
 ## Routing & classification
 
-See **[docs/ROUTING.md](docs/ROUTING.md)** for the full classification +
-routing pipeline: how the soul_classifier (Haiku, JSON output) and
-`router.py` (deterministic Python) work together, the tag vocabulary,
-worked examples, and failure modes.
+See **[docs/FLOW.md](docs/FLOW.md)** for the end-to-end narrative —
+from a user's Telegram question to the response, with the soul `.md`
+file organization as the central thread. Start here for the
+conceptual model.
+
+See **[docs/ROUTING.md](docs/ROUTING.md)** for the classification +
+routing pipeline deep dive: how the soul_classifier (Haiku, JSON output)
+and `router.py` (deterministic Python) work together, the tag
+vocabulary, worked examples, and failure modes.
 
 See **[docs/MIGRATION_BINARY.md](docs/MIGRATION_BINARY.md)** for the
-planned binary-domain migration: making the m3xa vs m3xabr split fully
-deterministic at the retrieval layer (drops one LLM call, drops the
-soul-level "BRAZIL INVISIBLE" rule, simplifies failure modes).
+design rationale behind the binary domain split (m3xa vs m3xabr at the
+retrieval layer).
 
 ## Corrections pipeline
 Rubric-collector auto-detections land in `corrections/candidates.jsonl` — never in a live
