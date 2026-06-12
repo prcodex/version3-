@@ -241,7 +241,7 @@ block. Every query with the same `(product, tags)` combination warms one
 cache entry per hour and pays ~0.1× on subsequent reads. The data context
 sits in the user message — always different, always fresh, never cached.
 
-### A concrete example — what Haiku actually sees
+### Concrete example for m3xa
 
 For the query **"Last 12h of the Iran war — full update"** sent to
 `@M3xA_bot`, the Haiku router returns:
@@ -461,6 +461,217 @@ introduction even if it wanted to, because the schema's first key is
 
 For the second Iran query in the same hour, only the dynamic part incurs
 full token cost. The 2,130-token system prompt is a cache hit.
+
+### Concrete example for m3xabr
+
+For the query **"USD/BRL essa semana + odds do Polymarket sobre eleição 2026"**
+sent to `@M3xabr_bot`, the Haiku router returns:
+
+```json
+{
+  "modules": ["m3xabr/souls/modules/polymarket.md", "m3xabr/souls/modules/charts.md"],
+  "reasoning": "Pergunta combina movimento USDBRL (charts) com odds eleitorais (polymarket). Dados Polymarket presentes no contexto → ambos os módulos carregam."
+}
+```
+
+The assembler reads those files in order and emits **122 lines / 6,975
+chars / 1,853 tokens** of system prompt. Skeleton:
+
+````markdown
+# M3xA Brasil — Núcleo: Identidade e Convenções       ← m3xabr/souls/core.md (835 tok)
+
+## IDENTIDADE
+Sou M3xA Brasil, um agente de inteligência especializado em política,
+economia e mercados brasileiros. Sintetizo research institucional,
+notícias locais, dados de mercado e pesquisas eleitorais em análises
+acionáveis — como um analista sênior de Brasil briefaria sua equipe.
+Respondo SEMPRE em português brasileiro.
+
+## REGRAS DE PERSONA
+[... grounding, time/freshness, data conventions ...]
+
+## POLÍTICA BRASILEIRA — CONHECIMENTO DE BASE
+- Dinâmicas institucionais: Executivo, Legislativo, Judiciário.
+- Política monetária: Copom, Selic, comunicados do BCB, atas — citar
+  EXATAMENTE, nunca inferir direção.
+[... arcabouço fiscal, Congresso articulações ...]
+
+---
+
+# Overlay Brasil                                       ← m3xabr/souls/overlay.md (489 tok)
+
+IDIOMA: SEMPRE português brasileiro. ESCOPO: política, economia e mercados brasileiros.
+
+## TIERS DE FONTES
+- T1 Research (citar casa + data):
+  - **Itaú Research** — maior research do Brasil; macro, fiscal, Selic. "Segundo o Itaú..."
+  - **XP Macro Strategy** — visões fortes sobre fiscal e Selic. "A XP avalia..."
+  - **BTG Pactual** — câmbio, juros. "O BTG projeta..."
+[... T2 (Traumann/Recondo/Daniela/Josias), T3 mídia, REGRAS RÍGIDAS DE IDENTIDADE, PESQUISAS, CÂMBIO ...]
+
+---
+
+# Exemplos Canônicos                                   ← m3xabr/souls/examples.md (160 tok)
+
+EX1 — Tabela compacta de pesquisa:
+<pre>
+Pesquisa  Lula Tarcisio Marçal
+Datafolha 32%  28%      18%
+Quaest    30%  26%      20%
+</pre>
+[... EX2 (contraste de casas), EX3 (cita exata) ...]
+
+---
+
+# Módulo Polymarket                                    ← m3xabr/souls/modules/polymarket.md (119 tok)
+                                                         (carregado porque polymarket_data_present=true)
+
+- Evidência de mercado tecida nos temas — nunca uma seção isolada.
+- Citar APENAS nomes e preços verbatim do contexto. Nunca inventar.
+- Brasil: somente mercados >$1M de volume; análise escrita só se candidato
+  moveu >2pp — caso contrário, tabela compacta top-3 sem comentário.
+- SILÊNCIO TOTAL na ausência: sem dados de Polymarket no contexto, não
+  mencionar Polymarket — sem disclaimers, sem "dados indisponíveis."
+
+---
+
+# Módulo de Gráficos                                   ← m3xabr/souls/modules/charts.md (108 tok)
+                                                         (carregado porque a pergunta é sobre price action)
+
+Anexar no final da resposta, máx 1 por mensagem: `<!--CHART:TICKER:RANGE:TYPE-->`
+- TICKER: símbolo yfinance (USDBRL=X, ^BVSP); vírgulas para comparação.
+- RANGE: 1d|5d|1mo|3mo|6mo|1y. TYPE: candlestick|comparison|snapshot.
+[... usar apenas para perguntas de preço/tendência ...]
+
+---
+
+{{AGENT_AND_DATA_CONTEXT}}                            ← placeholder; Gateway insere
+                                                         dados recuperados (ver abaixo)
+
+---
+
+# Formato de Saída (Telegram — BR)                    ← m3xabr/souls/output.md (142 tok)
+
+- Tamanhos: tabelas/dados MAX 2500 chars; análise MAX 4000; perguntas rápidas <500.
+- DADOS PRIMEIRO: tabela `<pre>` antes de qualquer texto. Sem preâmbulo.
+- `<pre>` MAX 30 chars de largura, uma linha por row, sem decoração.
+- SEM ## headers (Telegram mostra literal) — negrito em linha própria.
+- NUNCA: tabelas markdown com pipes, ASCII art, JSON cru.
+````
+
+### What goes into the `{{AGENT_AND_DATA_CONTEXT}}` block
+
+The Gateway fills the placeholder with the retrieval block. For this
+m3xabr query, it might look like:
+
+```markdown
+=== MARKET SNAPSHOT (LIVE, 2026-06-12 14:07 BRT) ===
+USD/BRL    5.4820  -0.42%  (semana: BRL +1.8%)
+Ibovespa   126,420 +0.61%  (semana: +2.1%)
+DI Jan/27  10.85%  -3bp
+Brent      $92.40  +2.1%
+Selic      10.50%  (próximo Copom: 18-jun-2026)
+
+=== AGENTES (Polymarket Brasil, top 5 por volume, snapshot 13:00 BRT) ===
+"Lula reeleito em 2026?"          YES 38¢ (era 36¢ 24h, +2pp, $3.1M)
+"Tarcísio venceria 2º turno?"     YES 27¢ (era 24¢, +3pp, $2.4M)
+"Marçal no 2º turno?"             YES 14¢ (era 13¢, +1pp, $1.2M)
+"Selic em 9.5% até dez/26?"       YES 41¢ (era 38¢, +3pp, $1.8M)
+"USD/BRL > 5.80 até set/26?"      YES 22¢ (era 25¢, -3pp, $0.9M)
+
+=== PESQUISAS ELEITORAIS (mais recentes) ===
+Datafolha (Jun 10): Lula 32%, Tarcísio 28%, Marçal 18%, Pacheco 4%, brancos 8%
+Quaest (Jun 8):     Lula 30%, Tarcísio 26%, Marçal 20%, Pacheco 5%, brancos 7%
+Atlas Intel (Jun 7): Lula 31%, Tarcísio 29%, Marçal 17%, Pacheco 4%, brancos 6%
+
+=== TWITTER BR (últimas 12h) ===
+@traumann 09:14 — "Bastidores PT: Lula descontente com pesquisas de Quaest;
+  pressão por reforma ministerial cresce. Janja contra Haddad ficar."
+@Daniela_Lima 10:30 — "Lira sinaliza disposição de pautar PEC do andar
+  de cima na semana que vem se governo aceitar emendas."
+@FelipeRecondo 11:45 — "STF: Moraes mantém prisão de Bolsonaro; Toffoli
+  e Mendonça em divergência; decisão monocrática deve cair na sessão de quinta."
+@JosiasdSouza 12:20 — "Haddad em SP busca apoio de Tarcísio para CSLL;
+  reunião privada na Bandeirantes. Tarcísio condiciona apoio à blindagem
+  de pauta econômica do governo paulista."
+
+=== RESEARCH (últimos 7 dias) ===
+Itaú Research (Jun 8): "USDBRL deve oscilar em 5.40-5.60 no curto prazo.
+  Selic mantida em 10.50% em junho; corte em ago condicional a fiscal."
+XP Macro (Jun 9): "Avaliação fiscal cada vez mais cética. BRL pressionado
+  por dúvidas sobre cumprimento da meta primária 2026."
+BTG (Jun 10): "Posicionado long BRL contra DXY no curto; trade tático para
+  fechamento do trimestre."
+
+=== USER QUERY ===
+USD/BRL essa semana + odds do Polymarket sobre eleição 2026
+```
+
+### Generation
+
+m3xabr has **no schema-constrained output for this combo** (the geo
+schema lives in m3xa only). Haiku gets the full prompt and writes
+markdown freely, but `output.md` and the routed modules constrain the
+shape heavily:
+
+- DATA FIRST — tabela `<pre>` antes de qualquer narrativa (output.md rule)
+- Polymarket evidence woven into themes, not standalone (polymarket.md rule)
+- One `<!--CHART:USDBRL=X:5d:candlestick-->` tag at the end (charts.md rule)
+- Whole response in PT-BR (overlay rule)
+
+Sample response shape Haiku would emit:
+
+```markdown
+<pre>
+USD/BRL              5.4820  -0.42%
+  Semana             BRL +1.8%
+  Range 5d           5.4720 – 5.5340
+Ibovespa           126,420  +0.61%
+  Semana                    +2.1%
+DI Jan/27           10.85%  -3bp
+</pre>
+
+**Câmbio.** BRL +1.8% na semana, melhor performer em LatAm. Itaú (8/jun)
+projeta range 5.40-5.60 no curto prazo, com Selic mantida em 10.50% no
+Copom de junho. BTG (10/jun) posicionado long BRL contra DXY — trade
+tático para fechamento do trimestre. _XP (9/jun) mais cético, citando
+dúvidas sobre meta primária 2026._
+
+**Polymarket eleição.** Lula 38¢ para reeleição (+2pp), Tarcísio 27¢
+no 2º turno (+3pp) — movimento consistente com Datafolha (32%/28%,
+10/jun) e Atlas (31%/29%, 7/jun). Quaest fora da curva, dando Tarcísio
+em 26% e Marçal subindo a 20%. Marçal a 14¢ na bolsa de aposta — bem
+abaixo do que aparece nas pesquisas; mercado precificando teto.
+
+**Bastidores.** Traumann reporta tensão Janja×Haddad no PT; Lira (via
+Daniela Lima) sinaliza disposição de pautar PEC se governo aceitar
+emendas; Recondo confirma divergência Moraes×Toffoli×Mendonça em sessão
+do STF prevista para quinta. Haddad busca apoio de Tarcísio para CSLL
+(Josias).
+
+_Câmbio off-peak: B3 fecha às 18h BRT._
+
+<!--CHART:USDBRL=X:5d:candlestick-->
+```
+
+### What gets cached vs not
+
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │ STATIC PREFIX (cache hit after first warm)              │
+   │   core.md + overlay.md + examples.md +                  │
+   │   polymarket.md + charts.md + output.md = 1,853 tok     │  cached 1h TTL
+   │   (cache key: m3xabr + [polymarket_data, price_action]) │
+   └─────────────────────────────────────────────────────────┘
+   ┌─────────────────────────────────────────────────────────┐
+   │ DYNAMIC DATA (always fresh)                              │
+   │   retrieval block + user query  ≈ 1,200 tok             │  never cached
+   └─────────────────────────────────────────────────────────┘
+```
+
+Same caching behavior as m3xa — the static prefix warms once per hour
+per `(product, tags)` combo, the data block rides in the user message
+fresh every query.
 
 ## Stage 5 — Generation (Bedrock)
 

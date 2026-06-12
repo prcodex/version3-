@@ -141,6 +141,7 @@ flowchart TB
     OUTBLK --> MODEL["<b>🧠 Model</b><br/>default: <b>Claude Haiku 4.5</b><br/>override: <b>broad/deep → Sonnet 4.6</b>"]
     MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control on static prefix<br/>data context rides in user message"]
     CACHE --> GEN(["<b>📤 Telegram response</b><br/>via renderer.render_geo() when schema fires"])
+    GEN -.-> EX["<b>📖 See full worked example</b><br/>Last 12h of the Iran war —<br/>full assembled prompt + retrieved data<br/>(docs/FLOW.md)"]
 
     META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>2,130 tok</b><br/>TYPICAL (no tags): 1,655 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
@@ -154,6 +155,7 @@ flowchart TB
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/router_prompt.md" _blank
     click FALL "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
+    click EX "https://github.com/prcodex/version3-/blob/main/docs/FLOW.md#concrete-example-for-m3xa" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -166,6 +168,7 @@ flowchart TB
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
     style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
+    style EX fill:#ecfeff,stroke:#0e7490,stroke-width:2px,stroke-dasharray:6 4,color:#155e75
 ```
 
 ### m3xabr — Brazil (PT-BR)
@@ -202,6 +205,7 @@ flowchart TB
     OUTBLK --> MODEL["<b>🧠 Modelo</b><br/>default: <b>Claude Haiku 4.5</b><br/>overrides: {} (nenhum por enquanto)"]
     MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control no prefixo estático<br/>data context vai na user message"]
     CACHE --> GEN(["<b>📤 Resposta no Telegram</b>"])
+    GEN -.-> EX["<b>📖 Ver exemplo completo</b><br/>USD/BRL + Polymarket eleição 2026<br/>prompt assemblado + dados recuperados<br/>(docs/FLOW.md)"]
 
     META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (polymarket + charts): <b>1,853 tok</b><br/>TÍPICO (sem tags): 1,626 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
@@ -218,6 +222,7 @@ flowchart TB
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/output.md" _blank
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/router_prompt.md" _blank
     click FALL "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
+    click EX "https://github.com/prcodex/version3-/blob/main/docs/FLOW.md#concrete-example-for-m3xabr" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -231,6 +236,7 @@ flowchart TB
     style BB fill:#e5e7eb,stroke:#9ca3af,stroke-width:2px,stroke-dasharray:5 5,color:#475569
     style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
     style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
+    style EX fill:#ecfeff,stroke:#0e7490,stroke-width:2px,stroke-dasharray:6 4,color:#155e75
 ```
 
 ## v3.1 upgrades
