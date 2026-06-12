@@ -11,32 +11,56 @@ the manifest of conditional modules below, pick which modules to load.
 
 ## Available modules
 
-- **geo** → `m3xa/souls/modules/geo.md`
-  Loads when the query touches international conflict, war, geopolitics,
-  Iran/Israel tensions, Hormuz strait, IRGC/Houthis/Hezbollah, conflict
-  escalation, or related mediation (Turkey/China/Qatar). Schema-constrained:
-  the response will be structured JSON (timeline / actors / market /
-  experts / watch). **Priority 1 — wins over others.**
+- **geo** → `m3xa/souls/modules/geo.md` — **Priority 1.** International
+  conflict, war, geopolitics, Iran/Israel, Hormuz, IRGC/Houthis/Hezbollah,
+  Ukraine/Russia, China/Taiwan tensions, escalation, mediators. **Schema-
+  constrained**: response will be structured JSON. If geo loads, drop any
+  module that would clash with the JSON schema (charts).
 
-- **polymarket** → `m3xa/souls/modules/polymarket.md`
-  Loads ONLY when Polymarket data is in the retrieved context (we tell
-  you below). Carries the "TOTAL SILENCE when no data" rule and how to
-  weave market evidence into themes. **Priority 2.**
+- **polymarket** → `m3xa/souls/modules/polymarket.md` — **Priority 2.**
+  Loads ONLY when Polymarket data is present in retrieved context (we tell
+  you below). Carries "TOTAL SILENCE when no data" rule + how to weave
+  market evidence into themes.
 
-- **charts** → `m3xa/souls/modules/charts.md`
-  Loads when the query asks about price action, performance, trends,
-  "how has X done", or percent moves on a specific asset. Use sparingly —
-  only when the user clearly wants chart-shaped analysis. **Priority 3.**
+- **fomc** → `m3xa/souls/modules/fomc.md` — **Priority 3.** Fed rate
+  decisions, FOMC meetings, dot plot, Powell/governor speeches, rate-cut
+  outlook, terminal rate, QT/QE. Use when query is about Fed policy
+  specifically.
+
+- **economic_calendar** → `m3xa/souls/modules/economic_calendar.md` —
+  **Priority 4.** Upcoming or recent data releases (CPI, NFP, GDP, PMI,
+  jobless claims, JOLTS, ECB/BoE/BoJ/BCB decisions). Use when query asks
+  about the calendar, "what's coming this week", or specific data prints.
+
+- **positioning** → `m3xa/souls/modules/positioning.md` — **Priority 5.**
+  Hedge-fund positioning, dealer flow, vol regime, cross-asset correlation,
+  microstructure, "why is X bid", "pain trade", CFTC COT, CTA flows.
+  Surfaces Tony P / Donnelly / Exante specialist voice.
+
+- **energy** → `m3xa/souls/modules/energy.md` — **Priority 6.** Standalone
+  oil/gas/LNG analysis NOT tied to Iran/Hormuz (which goes to `geo`).
+  OPEC dynamics, crude supply/demand, Henry Hub vs TTF, refining margins,
+  EIA/IEA. Surfaces Javier Blas content.
+
+- **sectors** → `m3xa/souls/modules/sectors.md` — **Priority 7.** Bank
+  earnings, sector analysis (financials, tech/semis/AI, energy E&P,
+  defense, healthcare), regulatory impact, stress tests, earnings season.
+  Hard rule: no single-stock recommendations.
+
+- **charts** → `m3xa/souls/modules/charts.md` — **Priority 8.** Price
+  action / trend / performance queries on a specific asset (gold, oil,
+  S&P, DXY, BRL, Ibov, 10Y, etc.). Use sparingly — only when the user
+  clearly wants chart-shaped analysis. Cannot combine with geo.
 
 ## Decision rules
 
-1. Load at most 2 modules.
-2. When two modules both apply, higher priority wins (geo > polymarket > charts).
-3. Geo cannot combine with anything that would break its JSON schema —
-   if geo loads, charts is dropped even when `price_action` applies.
-4. When in doubt, load fewer modules. The always-loaded prefix
-   (core + overlay + examples + output) already handles general queries
-   without any conditional module.
+1. Load at most **2 modules** (the budget cap).
+2. When two modules both apply, higher priority wins (lower number = higher).
+3. **Geo is exclusive of charts** (schema constraint).
+4. **Polymarket only fires when polymarket_data_present = true.**
+5. When in doubt, load fewer modules. The always-loaded prefix
+   (core + overlay + examples + output) already handles general macro
+   queries without any conditional module.
 
 ## Context signals provided
 
@@ -46,8 +70,8 @@ the manifest of conditional modules below, pick which modules to load.
 
 ```json
 {
-  "modules": ["m3xa/souls/modules/geo.md", "m3xa/souls/modules/polymarket.md"],
-  "reasoning": "Iran war timeline + Polymarket data present → geo + polymarket. Charts dropped (schema constraint)."
+  "modules": ["m3xa/souls/modules/fomc.md", "m3xa/souls/modules/positioning.md"],
+  "reasoning": "Fed expectations query + positioning lens. Polymarket data not in context."
 }
 ```
 

@@ -11,30 +11,40 @@ manifesto de módulos condicionais abaixo, escolha quais módulos carregar.
 
 ## Módulos disponíveis
 
-- **polymarket** → `m3xabr/souls/modules/polymarket.md`
-  Carregar APENAS quando houver dados do Polymarket no contexto
-  recuperado (informamos abaixo). Carrega a regra de "SILÊNCIO TOTAL na
-  ausência" e como tecer a evidência de mercado nas análises.
-  **Prioridade 1.**
+- **polymarket** → `m3xabr/souls/modules/polymarket.md` — **Prioridade 1.**
+  Carregar APENAS quando houver dados do Polymarket no contexto recuperado
+  (informamos abaixo). Carrega a regra de "SILÊNCIO TOTAL na ausência" e
+  como tecer a evidência de mercado nas análises.
 
-- **charts** → `m3xabr/souls/modules/charts.md`
-  Carregar quando a pergunta for sobre movimento de preço, performance,
-  tendências, "como X se moveu", ou variação percentual de um ativo
-  específico (USDBRL, Ibovespa, etc.). **Prioridade 2.**
+- **electoral** → `m3xabr/souls/modules/electoral.md` — **Prioridade 2.**
+  Pesquisas eleitorais (Datafolha, Quaest, Atlas, Ipec, Paraná), cenários
+  presidenciais, intenção de voto, rejeição, evolução temporal, alianças,
+  segundo turno, candidatos 2026.
 
-- **brazilbrief** → `m3xabr/souls/modules/brazilbrief.md`
-  **DESATIVADO** (`enabled: false` no v3.1). Spec preservada para o
-  comando `#brazilbrief`, mas o módulo NÃO deve ser carregado nesta
-  versão. Prioridade 3 — ignorar.
+- **bastidores** → `m3xabr/souls/modules/bastidores.md` — **Prioridade 3.**
+  Política institucional brasileira: bastidores do governo, articulações
+  no Congresso, STF/Supremo, ministérios, nomeações, escândalos, crise
+  institucional, judiciário, CPIs, reforma ministerial. Surfaces Traumann
+  / Recondo / Daniela Lima / Josias / Reinaldo Azevedo. **Model override:
+  Sonnet 4.6** (profundidade narrativa).
+
+- **charts** → `m3xabr/souls/modules/charts.md` — **Prioridade 4.**
+  Movimento de preço, performance, tendências de um ativo específico
+  (USDBRL, Ibovespa, etc.).
+
+- **brazilbrief** → `m3xabr/souls/modules/brazilbrief.md` — **Prioridade 5.
+  DESATIVADO** (`enabled: false` no v3.1). Spec preservada para o comando
+  `#brazilbrief`, mas o módulo NÃO deve ser carregado. Ignorar.
 
 ## Regras de decisão
 
-1. Carregar no máximo 2 módulos.
-2. Quando dois módulos se aplicam, prioridade mais alta vence
-   (polymarket > charts).
-3. m3xabr **NÃO tem módulo geo** — perguntas sobre conflito/Irã/Hormuz
+1. Carregar no máximo **2 módulos**.
+2. Quando dois módulos se aplicam, prioridade mais alta vence (número
+   menor = maior).
+3. **Polymarket só dispara se polymarket_data_present = true.**
+4. m3xabr **NÃO tem módulo geo** — perguntas sobre conflito/Irã/Hormuz
    são roteadas para o m3xa via o split binário do Gateway, não chegam aqui.
-4. Quando em dúvida, carregar menos módulos. O prefixo sempre-carregado
+5. Quando em dúvida, carregar menos módulos. O prefixo sempre-carregado
    (core + overlay + examples + output) já cobre a maioria das perguntas.
 
 ## Sinais de contexto fornecidos
@@ -46,8 +56,8 @@ manifesto de módulos condicionais abaixo, escolha quais módulos carregar.
 
 ```json
 {
-  "modules": ["m3xabr/souls/modules/polymarket.md", "m3xabr/souls/modules/charts.md"],
-  "reasoning": "Pergunta sobre USDBRL com dados de Polymarket no contexto → polymarket + charts."
+  "modules": ["m3xabr/souls/modules/bastidores.md", "m3xabr/souls/modules/electoral.md"],
+  "reasoning": "Pergunta sobre articulação política + pesquisas → bastidores + electoral."
 }
 ```
 
@@ -62,10 +72,10 @@ prompt aceita uma forma de retorno mais rica — objetos de módulo com
 ```json
 {
   "modules": [
-    {"file": "m3xabr/souls/modules/polymarket.md", "sections": ["br-eleicoes"]},
-    {"file": "m3xabr/souls/modules/charts.md"}
+    {"file": "m3xabr/souls/modules/bastidores.md", "sections": ["stf"]},
+    {"file": "m3xabr/souls/modules/electoral.md"}
   ],
-  "reasoning": "Pergunta eleitoral → só a seção br-eleicoes do polymarket."
+  "reasoning": "Pergunta STF + eleição → só a seção stf do bastidores."
 }
 ```
 

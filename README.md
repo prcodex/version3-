@@ -125,9 +125,14 @@ flowchart TB
 
     subgraph COND["<b>🟨 CONDITIONAL · Haiku router picks · max 2</b>"]
         direction TB
-        G["<b>geo.md · 336 tok</b> · priority 1<br/>tags: iran · war · geopolitics<br/>conflict · hormuz<br/><b>📐 schema: geo_response.schema.json</b><br/>(structured output via constrained decoding)"]
-        P["<b>polymarket.md · 139 tok</b> · priority 2<br/>tag: <b>polymarket_data</b><br/>(set by Gateway when PM data in context)"]
-        CH["<b>charts.md · 112 tok</b> · priority 3<br/>tags: price_action · trend · performance"]
+        G["<b>geo.md · 336 tok</b> · priority 1<br/>iran · war · geopolitics · hormuz<br/>israel · hezbollah · houthi · ukraine<br/><b>📐 schema: geo_response.schema.json</b>"]
+        P["<b>polymarket.md · 139 tok</b> · priority 2<br/>polymarket_data<br/>(set by Gateway when PM data in context)"]
+        FO["<b>fomc.md · 312 tok</b> · priority 3<br/>fomc · fed · monetary_policy · powell<br/>rate_decision · dot_plot"]
+        EC["<b>economic_calendar.md · 350 tok</b> · priority 4<br/>cpi · nfp · gdp · pmi · jolts<br/>jobless_claims · data_release"]
+        PO["<b>positioning.md · 326 tok</b> · priority 5<br/>positioning · flow · vol_regime<br/>hedge_fund · microstructure · cross_asset"]
+        EN["<b>energy.md · 332 tok</b> · priority 6<br/>energy · oil · opec · lng<br/>natural_gas · crude · refining"]
+        SE["<b>sectors.md · 365 tok</b> · priority 7<br/>sectors · banks · earnings<br/>tech_sector · defense · financials"]
+        CH["<b>charts.md · 112 tok</b> · priority 8<br/>price_action · trend · performance"]
     end
 
     subgraph OUTBLK["<b>🟩 OUTPUT · always LAST</b>"]
@@ -143,7 +148,7 @@ flowchart TB
     CACHE --> GEN(["<b>📤 Telegram response</b><br/>via renderer.render_geo() when schema fires"])
     GEN -.-> EX["<b>📖 See full worked example</b><br/>Last 12h of the Iran war —<br/>full assembled prompt + retrieved data<br/>(docs/FLOW.md)"]
 
-    META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>2,130 tok</b><br/>TYPICAL (no tags): 1,655 tok<br/>BUDGET: 2,600 tok"]
+    META["<b>📊 Budget profile</b><br/>WORST CASE (sectors + positioning): <b>2,346 tok</b><br/>geo + polymarket: 2,130 tok<br/>TYPICAL (no tags): 1,655 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
 
     click A1 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/core.md" _blank
@@ -156,6 +161,11 @@ flowchart TB
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/router_prompt.md" _blank
     click FALL "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
     click EX "https://github.com/prcodex/version3-/blob/main/docs/FLOW.md#concrete-example-for-m3xa" _blank
+    click FO "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/fomc.md" _blank
+    click EC "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/economic_calendar.md" _blank
+    click PO "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/positioning.md" _blank
+    click EN "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/energy.md" _blank
+    click SE "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/sectors.md" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -166,6 +176,11 @@ flowchart TB
     style G fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style FO fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style EC fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style PO fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style EN fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style SE fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
     style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
     style EX fill:#ecfeff,stroke:#0e7490,stroke-width:2px,stroke-dasharray:6 4,color:#155e75
@@ -189,9 +204,11 @@ flowchart TB
 
     subgraph COND["<b>🟨 CONDICIONAL · Haiku router escolhe · max 2</b>"]
         direction TB
-        P["<b>polymarket.md · 119 tok</b> · priority 1<br/>tag: <b>polymarket_data</b><br/>(definido pelo Gateway quando há dados PM)"]
-        CH["<b>charts.md · 108 tok</b> · priority 2<br/>tags: price_action · trend · performance"]
-        BB["<b>brazilbrief.md · 320 tok budget</b> · priority 3<br/><b>⚠️ enabled: false — DEPRIORITIZED</b><br/>no repo mas nunca carregado"]
+        P["<b>polymarket.md · 119 tok</b> · priority 1<br/>polymarket_data<br/>(definido pelo Gateway)"]
+        EL["<b>electoral.md · 356 tok</b> · priority 2<br/>eleicao · pesquisa · poll<br/>candidato · segundo_turno"]
+        BA["<b>bastidores.md · 411 tok</b> · priority 3<br/>stf · supremo · congresso · ministerio<br/>politica · escandalo · judiciario<br/><b>🧠 model: Sonnet 4.6</b>"]
+        CH["<b>charts.md · 108 tok</b> · priority 4<br/>price_action · trend · performance"]
+        BB["<b>brazilbrief.md · 320 tok</b> · priority 5<br/><b>⚠️ enabled: false — DEPRIORITIZED</b><br/>no repo mas nunca carregado"]
     end
 
     subgraph OUTBLK["<b>🟩 SAÍDA · sempre por ÚLTIMO</b>"]
@@ -207,7 +224,7 @@ flowchart TB
     CACHE --> GEN(["<b>📤 Resposta no Telegram</b>"])
     GEN -.-> EX["<b>📖 Ver exemplo completo</b><br/>USD/BRL + Polymarket eleição 2026<br/>prompt assemblado + dados recuperados<br/>(docs/FLOW.md)"]
 
-    META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (polymarket + charts): <b>1,853 tok</b><br/>TÍPICO (sem tags): 1,626 tok<br/>BUDGET: 2,600 tok"]
+    META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (bastidores + electoral): <b>2,393 tok</b><br/>polymarket + charts: 1,853 tok<br/>TÍPICO (sem tags): 1,626 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
 
     NOTE["<b>📌 Notas específicas do m3xabr</b><br/>• Sem módulo geo — geo queries roteadas pra m3xa<br/>• Sem schema estruturado — Haiku livre<br/>• brazilbrief mantido por spec, mas <b>NÃO carregado</b><br/>(bastidores narrativo voltará via Sonnet override)"]
@@ -223,6 +240,8 @@ flowchart TB
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/router_prompt.md" _blank
     click FALL "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
     click EX "https://github.com/prcodex/version3-/blob/main/docs/FLOW.md#concrete-example-for-m3xabr" _blank
+    click EL "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/electoral.md" _blank
+    click BA "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/bastidores.md" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -234,6 +253,8 @@ flowchart TB
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style BB fill:#e5e7eb,stroke:#9ca3af,stroke-width:2px,stroke-dasharray:5 5,color:#475569
+    style EL fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style BA fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
     style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
     style EX fill:#ecfeff,stroke:#0e7490,stroke-width:2px,stroke-dasharray:6 4,color:#155e75

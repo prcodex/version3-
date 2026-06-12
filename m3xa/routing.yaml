@@ -11,7 +11,7 @@ last:
 
 conditional:
   geo:
-    tags: [iran, war, geopolitics, conflict, hormuz]
+    tags: [iran, war, geopolitics, conflict, hormuz, israel, hezbollah, houthi, ukraine, russia, china_taiwan]
     file: m3xa/souls/modules/geo.md
     priority: 1
     structured_output: schemas/geo_response.schema.json   # constrained decoding (Bedrock GA Feb-2026)
@@ -19,12 +19,32 @@ conditional:
     tags: [polymarket_data]
     file: m3xa/souls/modules/polymarket.md
     priority: 2
+  fomc:
+    tags: [fomc, fed, monetary_policy, rate_decision, dot_plot, fed_funds, powell]
+    file: m3xa/souls/modules/fomc.md
+    priority: 3
+  economic_calendar:
+    tags: [economic_calendar, data_release, cpi, nfp, gdp, pmi, jobless_claims, jolts]
+    file: m3xa/souls/modules/economic_calendar.md
+    priority: 4
+  positioning:
+    tags: [positioning, flow, vol_regime, hedge_fund, microstructure, cross_asset]
+    file: m3xa/souls/modules/positioning.md
+    priority: 5
+  energy:
+    tags: [energy, oil, opec, lng, natural_gas, crude, refining, commodities]
+    file: m3xa/souls/modules/energy.md
+    priority: 6
+  sectors:
+    tags: [sectors, banks, earnings, tech_sector, defense, financials]
+    file: m3xa/souls/modules/sectors.md
+    priority: 7
   charts:
     tags: [price_action, trend, performance]
     file: m3xa/souls/modules/charts.md
-    priority: 3
+    priority: 8
 
-max_conditional: 2
+max_conditional: 2   # stays at 2 — module set grew from 3 to 8, but the 2,600-token total budget is tight; cap=3 would breach
 
 models:
   default: claude-haiku-4-5
@@ -46,4 +66,9 @@ budgets:
   m3xa/souls/modules/geo.md: 420
   m3xa/souls/modules/polymarket.md: 180
   m3xa/souls/modules/charts.md: 160
+  m3xa/souls/modules/fomc.md: 350
+  m3xa/souls/modules/economic_calendar.md: 380
+  m3xa/souls/modules/positioning.md: 360
+  m3xa/souls/modules/energy.md: 370
+  m3xa/souls/modules/sectors.md: 400
   m3xa/souls/output.md: 280

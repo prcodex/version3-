@@ -14,21 +14,30 @@ conditional:
     tags: [polymarket_data]
     file: m3xabr/souls/modules/polymarket.md
     priority: 1
+  electoral:
+    tags: [electoral, eleicao, pesquisa, poll, candidato, segundo_turno]
+    file: m3xabr/souls/modules/electoral.md
+    priority: 2
+  bastidores:
+    tags: [bastidores, politica, stf, supremo, congresso, ministerio, escandalo, judiciario]
+    file: m3xabr/souls/modules/bastidores.md
+    priority: 3
+    model_override: claude-sonnet-4-6   # narrative depth: bastidores benefits from Sonnet
   charts:
     tags: [price_action, trend, performance]
     file: m3xabr/souls/modules/charts.md
-    priority: 2
-  brazilbrief:                       # DEPRIORITIZED — keep spec, do not load
+    priority: 4
+  brazilbrief:                          # DEPRIORITIZED — keep spec, do not load
     tags: [brazilbrief]
     file: m3xabr/souls/modules/brazilbrief.md
-    priority: 3
+    priority: 5
     enabled: false
 
 max_conditional: 2
 
 models:
   default: claude-haiku-4-5
-  overrides: {}                      # e.g. bastidores: claude-sonnet-4-6 when brief returns
+  overrides: {}                         # per-module overrides handled in conditional blocks above
 
 cache:
   enabled: true
@@ -41,5 +50,7 @@ budgets:
   m3xabr/souls/examples.md: 350
   m3xabr/souls/modules/polymarket.md: 180
   m3xabr/souls/modules/charts.md: 160
+  m3xabr/souls/modules/electoral.md: 390
+  m3xabr/souls/modules/bastidores.md: 450
   m3xabr/souls/modules/brazilbrief.md: 320
   m3xabr/souls/output.md: 280
