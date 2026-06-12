@@ -268,6 +268,12 @@ See **[docs/MIGRATION_BINARY.md](docs/MIGRATION_BINARY.md)** for the
 design rationale behind the binary domain split (m3xa vs m3xabr at the
 retrieval layer).
 
+See **[docs/AI_ROUTER.md](docs/AI_ROUTER.md)** for the proposed shift
+from Python `router.py` to a Haiku-driven router prompt (`m3xa/router_prompt.md`
+and `m3xabr/router_prompt.md`). Status: design draft, not implemented —
+addresses future module growth (sub-section composition, context-dependent
+priority) without changing the surrounding architecture.
+
 ## Corrections pipeline
 Rubric-collector auto-detections land in `corrections/candidates.jsonl` — never in a live
 soul. Promotion requires human approval and rewrites the lesson as a POSITIVE rule in the
