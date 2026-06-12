@@ -29,12 +29,12 @@ flowchart TB
 
     subgraph ORDER["<b>🧩 Assembly order — worst case 1,886 tok measured (budget 2,600)</b>"]
         direction TB
-        C1["<b>1. core/soul_core.md</b><br/><b>712 tok</b><br/>identity · grounding · time · citation"]
-        C2["<b>2. overlays/global.md 376 tok</b><br/><b>overlays/brazil.md 344 tok</b><br/>source tiers · Brazil hard filter<br/>identity rules"]
-        C3["<b>3. conditional modules — max 2</b><br/>geo 302 · polymarket 139<br/>brazilbrief 187 · charts 112"]
-        C4["<b>4. examples/examples.md</b><br/><b>196 tok</b><br/>3 canonical few-shots"]
+        C1["<b>1. {product}/souls/core.md</b><br/><b>712 tok</b><br/>identity · grounding · time · citation"]
+        C2["<b>2. m3xa overlay 376 tok</b><br/><b>m3xabr overlay 344 tok</b><br/>source tiers · Brazil hard filter<br/>identity rules"]
+        C3["<b>3. conditional modules — max 2</b><br/>geo 302 · polymarket 139<br/>charts 112 (brazilbrief disabled)"]
+        C4["<b>4. {product}/souls/examples.md</b><br/><b>196 tok</b><br/>3 canonical few-shots"]
         C5["<b>5. AGENT_AND_DATA_CONTEXT</b><br/>placeholder<br/>Gateway inserts live feed here"]
-        C6["<b>6. output/global.md 161 tok</b><br/><b>output/brazil.md 142 tok</b><br/><b>format rules LAST</b> — recency effect"]
+        C6["<b>6. m3xa output 161 tok</b><br/><b>m3xabr output 142 tok</b><br/><b>format rules LAST</b> — recency effect"]
         C1 --> C2 --> C3 --> C4 --> C5 --> C6
     end
     ASM -. <b>builds</b> .-> C1
@@ -57,11 +57,11 @@ flowchart TB
 
     C6 ~~~ GH
 
-    click C1 "https://github.com/prcodex/version3-/blob/main/souls/core/soul_core.md" _blank
-    click C2 "https://github.com/prcodex/version3-/tree/main/souls/overlays" _blank
-    click C3 "https://github.com/prcodex/version3-/tree/main/souls/modules" _blank
-    click C4 "https://github.com/prcodex/version3-/blob/main/souls/examples/examples.md" _blank
-    click C6 "https://github.com/prcodex/version3-/tree/main/souls/output" _blank
+    click C1 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/core.md" _blank
+    click C2 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/overlay.md" _blank
+    click C3 "https://github.com/prcodex/version3-/tree/main/m3xa/souls/modules" _blank
+    click C4 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/examples.md" _blank
+    click C6 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
     click RTR "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
     click ASM "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/assembler.py" _blank
     click VAL "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/validate.py" _blank
@@ -85,18 +85,30 @@ flowchart TB
 ```
 
 ## Layout
+Two self-contained products, routed UPFRONT by the Gateway — no shared locale switch:
+
 ```
-souls/        Markdown modules (the actual prompt content)
-  core/       Always loaded — identity, grounding, citation (~0.9K tok)
-  overlays/   Locale layer: global | brazil (~0.5K tok)
-  modules/    Conditional, classifier-routed: geo, polymarket, brazilbrief, charts
-  output/     Format rules — always assembled LAST
-  examples/   Canonical few-shot examples
-routing/      routing.yaml — tag→module map, priorities, token budgets
-src/          Python: assembler, router, compiler, validator, corrections pipeline
+m3xa/         Global macro agent (English)
+  souls/      core.md · overlay.md · examples.md · output.md · modules/{geo,polymarket,charts}.md
+  routing.yaml  tag→module map, model tiering, cache config, token budgets
+m3xabr/       Brazil agent (PT-BR) — own core, own identity, own routing
+  souls/      core.md · overlay.md · examples.md · output.md · modules/{polymarket,charts,brazilbrief*}.md
+  routing.yaml  (*brazilbrief present but enabled: false — deprioritized)
+schemas/      geo_response.schema.json — Bedrock structured-output grammar
+src/          assembler (cache-aware bedrock_payload), router, renderer, compiler, validator, corrections
 eval/         12-query old-vs-new harness scored against evaluator_rubric
 tests/        pytest suite; CI enforces budgets and lint on every PR
 ```
+
+## v3.1 upgrades
+- **Two products**: `assemble("m3xa"|"m3xabr", tags)` — fully isolated soul stacks.
+- **Prompt caching (Bedrock, 1h TTL)**: `bedrock_payload()` returns system blocks with
+  `cache_control` on the static prefix; data context always rides in the user message.
+  Compiled monoliths are byte-identical per product => fully cacheable (~0.1x reads).
+- **Structured outputs**: geo queries generate JSON under `schemas/geo_response.schema.json`
+  via constrained decoding; `m3xa_souls.renderer.render_geo()` builds the Telegram HTML.
+  Format compliance lives in code, not prompt rules.
+- **Model tiering**: per-tag override in routing.yaml (e.g. `broad → claude-sonnet-4-6`).
 
 ## Quick start
 ```bash
@@ -104,13 +116,14 @@ pip install -e ".[dev]"
 make validate          # lint all souls: budgets, forbidden patterns, duplicate rules
 make compile           # materialize compiled souls for single-file gateways
 pytest
-python -m m3xa_souls.assembler --locale global --tags iran,price_action --report
+python -m m3xa_souls.assembler --product m3xa --tags iran,polymarket_data --report
+python -m m3xa_souls.assembler --product m3xa --tags iran --bedrock-json   # cache blocks + schema
 ```
 
 ## Gateway integration (two modes)
-1. **Native**: Gateway calls `assemble(locale, tags)` per query (preferred).
-2. **Pre-compiled**: `compiler.py` materializes `dist/soul_global_compiled.md` and
-   `dist/soul_brazil_compiled.md` on every merge to main; Gateway keeps loading one file.
+1. **Native**: Gateway calls `assemble(product, tags)` / `bedrock_payload(product, tags)` per query (preferred).
+2. **Pre-compiled**: `compiler.py` materializes `dist/soul_m3xa_compiled.md` and
+   `dist/soul_m3xabr_compiled.md` on every merge to main; Gateway keeps loading one file.
    (Bridge mode until Gateway supports multi-file assembly.)
 
 ## Corrections pipeline

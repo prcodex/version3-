@@ -1,0 +1,49 @@
+# m3xa — Global Macro agent (English). Product is routed UPFRONT by the Gateway.
+product: m3xa
+language: en
+
+always:
+  - m3xa/souls/core.md
+  - m3xa/souls/overlay.md
+  - m3xa/souls/examples.md
+last:
+  - m3xa/souls/output.md
+
+conditional:
+  geo:
+    tags: [iran, war, geopolitics, conflict, hormuz]
+    file: m3xa/souls/modules/geo.md
+    priority: 1
+    structured_output: schemas/geo_response.schema.json   # constrained decoding (Bedrock GA Feb-2026)
+  polymarket:
+    tags: [polymarket_data]
+    file: m3xa/souls/modules/polymarket.md
+    priority: 2
+  charts:
+    tags: [price_action, trend, performance]
+    file: m3xa/souls/modules/charts.md
+    priority: 3
+
+max_conditional: 2
+
+models:
+  default: claude-haiku-4-5
+  overrides:
+    broad: claude-sonnet-4-6        # deep weekly synthesis routes to Sonnet
+    deep: claude-sonnet-4-6
+
+cache:                              # Bedrock prompt caching (1h TTL GA on Haiku 4.5, Jan-2026)
+  enabled: true
+  ttl: 1h
+  # static breakpoint = everything before the data placeholder; cache key varies only
+  # by the (small) set of tag combinations, so each combo warms once per TTL.
+
+budgets:
+  total: 2600
+  m3xa/souls/core.md: 950
+  m3xa/souls/overlay.md: 500
+  m3xa/souls/examples.md: 450
+  m3xa/souls/modules/geo.md: 420
+  m3xa/souls/modules/polymarket.md: 180
+  m3xa/souls/modules/charts.md: 160
+  m3xa/souls/output.md: 280

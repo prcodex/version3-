@@ -1,0 +1,45 @@
+# m3xabr — Brazil agent (PT-BR). Product is routed UPFRONT by the Gateway.
+product: m3xabr
+language: pt-BR
+
+always:
+  - m3xabr/souls/core.md
+  - m3xabr/souls/overlay.md
+  - m3xabr/souls/examples.md
+last:
+  - m3xabr/souls/output.md
+
+conditional:
+  polymarket:
+    tags: [polymarket_data]
+    file: m3xabr/souls/modules/polymarket.md
+    priority: 1
+  charts:
+    tags: [price_action, trend, performance]
+    file: m3xabr/souls/modules/charts.md
+    priority: 2
+  brazilbrief:                       # DEPRIORITIZED — keep spec, do not load
+    tags: [brazilbrief]
+    file: m3xabr/souls/modules/brazilbrief.md
+    priority: 3
+    enabled: false
+
+max_conditional: 2
+
+models:
+  default: claude-haiku-4-5
+  overrides: {}                      # e.g. bastidores: claude-sonnet-4-6 when brief returns
+
+cache:
+  enabled: true
+  ttl: 1h
+
+budgets:
+  total: 2600
+  m3xabr/souls/core.md: 950
+  m3xabr/souls/overlay.md: 520
+  m3xabr/souls/examples.md: 350
+  m3xabr/souls/modules/polymarket.md: 180
+  m3xabr/souls/modules/charts.md: 160
+  m3xabr/souls/modules/brazilbrief.md: 320
+  m3xabr/souls/output.md: 280

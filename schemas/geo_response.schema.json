@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "geo_response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["window", "timeline", "actors", "market_reaction", "experts", "prediction_markets", "watch"],
+  "properties": {
+    "window": {"type": "string", "description": "Data window declared, e.g. 'Last 12 hours'"},
+    "timeline": {
+      "type": "array", "maxItems": 10,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["time_brt", "event", "source"],
+        "properties": {
+          "time_brt": {"type": "string"},
+          "event": {"type": "string"},
+          "source": {"type": "string"}}}
+    },
+    "actors": {
+      "type": "array", "maxItems": 8,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["actor", "summary"],
+        "properties": {"actor": {"type": "string"}, "summary": {"type": "string"}}}
+    },
+    "market_reaction": {
+      "type": "array", "maxItems": 8,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["asset", "before", "after", "change_pct"],
+        "properties": {
+          "asset": {"type": "string"},
+          "before": {"type": "string"},
+          "after": {"type": "string"},
+          "change_pct": {"type": "string"}}}
+    },
+    "experts": {
+      "type": "array", "maxItems": 6,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["name", "take", "source_date"],
+        "properties": {
+          "name": {"type": "string"},
+          "take": {"type": "string"},
+          "source_date": {"type": "string"},
+          "disagrees_with": {"type": "string"}}}
+    },
+    "prediction_markets": {
+      "type": "array", "maxItems": 5,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["market", "price", "trend"],
+        "properties": {
+          "market": {"type": "string"},
+          "price": {"type": "string"},
+          "trend": {"type": "string"}}}
+    },
+    "watch": {
+      "type": "array", "maxItems": 5,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["trigger", "market_implication"],
+        "properties": {
+          "trigger": {"type": "string"},
+          "market_implication": {"type": "string"}}}
+    }
+  }
+}

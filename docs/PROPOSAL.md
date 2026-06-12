@@ -44,3 +44,19 @@ data (the static agents table was removed from core).
 12 pinned-context queries (eval/queries.yaml), OLD vs NEW, both scored with
 evaluator_rubric.md. Cutover: NEW >= OLD everywhere, strictly better on
 format compliance + grounding. Old souls kept as .bak for 1 week.
+
+
+## v3.1 Addendum (Jun 2026)
+1. Two self-contained products (m3xa, m3xabr) routed upfront — no shared locale
+   parameter; each has its own core/identity, routing.yaml, budgets, language.
+2. Bedrock prompt caching (1h TTL, GA on Haiku 4.5 Jan-2026): assembler emits
+   cache_control on the static system prefix; data context in the user message.
+   Compiled monoliths are fully cacheable => ~0.1x input price on reads.
+3. Structured outputs (GA on Bedrock Feb-2026): geo responses constrained to
+   schemas/geo_response.schema.json; renderer.py builds Telegram HTML. Format
+   rules move from prompt to decoder + code (Polymarket silence is structural:
+   empty array => section omitted).
+4. Model tiering per tag in routing.yaml (broad/deep -> Sonnet 4.6).
+5. brazilbrief deprioritized: module retained, enabled: false.
+Next candidates (not yet implemented): GEPA module evolution on top of the
+Phase-2 eval harness, using evaluator_rubric feedback as ASI.

@@ -33,7 +33,7 @@ def load_queries():
 
 
 def build_new_prompt(q) -> tuple[str, object]:
-    prompt, report = assemble(q["locale"], q["tags"])
+    prompt, report = assemble(q["product"], q["tags"])
     ctx_file = CONTEXT / f"{q['id']}.txt"
     ctx = ctx_file.read_text() if ctx_file.exists() else "[NO PINNED CONTEXT — dry structure only]"
     return prompt.replace(DATA_PLACEHOLDER, ctx), report
@@ -58,7 +58,7 @@ def live_run():
     raise SystemExit(
         "Live mode scaffold: wire bedrock-runtime invoke_model here using your "
         "existing M3xA Bedrock client (same inference params as production), "
-        "iterate queries, call OLD soul (eval/old/soul_{locale}.md + context) and "
+        "iterate queries, call OLD soul (eval/old/soul_{product}.md + context) and "
         "NEW prompt, write paired outputs to eval/out/{id}_{arm}.md, then score "
         "both with evaluator_rubric.md."
     )
