@@ -111,6 +111,7 @@ Two products, two diagrams — same assembly grammar, different content. Each bl
 flowchart TB
     BOT(["<b>👤 @M3xA_bot · web</b><br/>English query"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xa</b><br/>tags ⊂ {iran · polymarket_data · price_action · trend · performance}"]
     CLS --> RTR["<b>router</b> (m3xa/routing.yaml)<br/>priority: geo &gt; polymarket &gt; charts<br/><b>max 2 modules</b>"]
+    RTR -.-> FUT["<b>📝 future: Haiku router</b><br/>m3xa/router_prompt.md<br/>see docs/AI_ROUTER.md"]
 
     subgraph ALWAYS["<b>🟦 ALWAYS LOADED · 1,494 tok</b>"]
         direction TB
@@ -151,6 +152,7 @@ flowchart TB
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
     click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
+    click FUT "https://github.com/prcodex/version3-/blob/main/docs/AI_ROUTER.md" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -161,6 +163,7 @@ flowchart TB
     style G fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style FUT fill:#fef2f2,stroke:#9333ea,stroke-width:2px,stroke-dasharray:6 4,color:#581c87
 ```
 
 ### m3xabr — Brazil (PT-BR)
@@ -170,6 +173,7 @@ flowchart TB
 flowchart TB
     BOT(["<b>👤 @M3xabr_bot · web</b><br/>Pergunta em PT-BR"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xabr</b><br/>tags ⊂ {polymarket_data · price_action · trend · performance}"]
     CLS --> RTR["<b>router</b> (m3xabr/routing.yaml)<br/>priority: polymarket &gt; charts<br/><b>max 2 modules</b>"]
+    RTR -.-> FUT["<b>📝 futuro: Haiku router</b><br/>m3xabr/router_prompt.md<br/>ver docs/AI_ROUTER.md"]
 
     subgraph ALWAYS["<b>🟦 SEMPRE CARREGADO · 1,484 tok</b>"]
         direction TB
@@ -213,6 +217,7 @@ flowchart TB
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/output.md" _blank
     click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
     click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
+    click FUT "https://github.com/prcodex/version3-/blob/main/docs/AI_ROUTER.md" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -224,6 +229,7 @@ flowchart TB
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style BB fill:#e5e7eb,stroke:#9ca3af,stroke-width:2px,stroke-dasharray:5 5,color:#475569
+    style FUT fill:#fef2f2,stroke:#9333ea,stroke-width:2px,stroke-dasharray:6 4,color:#581c87
 ```
 
 ## v3.1 upgrades
