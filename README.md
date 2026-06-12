@@ -259,6 +259,11 @@ routing pipeline: how the soul_classifier (Haiku, JSON output) and
 `router.py` (deterministic Python) work together, the tag vocabulary,
 worked examples, and failure modes.
 
+See **[docs/MIGRATION_BINARY.md](docs/MIGRATION_BINARY.md)** for the
+planned binary-domain migration: making the m3xa vs m3xabr split fully
+deterministic at the retrieval layer (drops one LLM call, drops the
+soul-level "BRAZIL INVISIBLE" rule, simplifies failure modes).
+
 ## Corrections pipeline
 Rubric-collector auto-detections land in `corrections/candidates.jsonl` — never in a live
 soul. Promotion requires human approval and rewrites the lesson as a POSITIVE rule in the
