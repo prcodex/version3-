@@ -142,6 +142,16 @@ flowchart TB
     META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>1,909 tok</b><br/>TYPICAL (no tags): 1,445 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
 
+    click A1 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/core.md" _blank
+    click A2 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/overlay.md" _blank
+    click A3 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/examples.md" _blank
+    click G "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/geo.md" _blank
+    click P "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/polymarket.md" _blank
+    click CH "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/charts.md" _blank
+    click OUT "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
+    click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
+    click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
+
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
     style OUTBLK fill:#dcfce7,stroke:#166534,stroke-width:3px,color:#0f172a
@@ -193,6 +203,16 @@ flowchart TB
 
     NOTE["<b>📌 Notas específicas do m3xabr</b><br/>• Sem módulo geo — geo queries roteadas pra m3xa<br/>• Sem schema estruturado — Haiku livre<br/>• brazilbrief mantido por spec, mas <b>NÃO carregado</b><br/>(bastidores narrativo voltará via Sonnet override)"]
     META -.-> NOTE
+
+    click A1 "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/core.md" _blank
+    click A2 "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/overlay.md" _blank
+    click A3 "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/examples.md" _blank
+    click P "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/polymarket.md" _blank
+    click CH "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/charts.md" _blank
+    click BB "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/brazilbrief.md" _blank
+    click OUT "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/output.md" _blank
+    click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
+    click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
