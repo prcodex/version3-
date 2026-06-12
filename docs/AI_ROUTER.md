@@ -1,41 +1,45 @@
-# AI Router — moving routing from Python to Haiku
+# AI Router — Haiku-driven routing (canonical)
 
-> **Status:** design draft. Not implemented. The Python `router.py` still
-> serves production. This doc captures the architectural direction and the
-> two draft router prompts (`m3xa/router_prompt.md`, `m3xabr/router_prompt.md`)
-> that will eventually drive the swap.
+> **Status:** canonical architecture as of `prcodex/version3-`.
+> The Haiku prompt (`m3xa/router_prompt.md`, `m3xabr/router_prompt.md`)
+> defines how routing works. `src/m3xa_souls/router.py` +
+> `routing.yaml` remain as the **deterministic offline fallback** —
+> they let the test suite, CI, and validate run without an LLM call.
+> Production runtime calls Haiku.
 
-## The shift
+## The architecture
 
-Today's router is **pure Python** — a 50-line `router.py` that reads
-`routing.yaml`, intersects tag sets, sorts by priority, caps at 2 modules,
-and returns file paths. Deterministic, fast, auditable. Works perfectly
-for the current 3-module-per-product setup.
+The router is a **Haiku prompt**. It takes the user query plus a module
+manifest and a few context signals, and returns the modules to load.
 
-The proposal: replace the Python router with a **Haiku prompt** that takes
-the user query and a module manifest, and returns the modules to load.
+`src/m3xa_souls/router.py` + `routing.yaml` are the **fallback path** —
+the same routing rules expressed as YAML data + 50 lines of dict-lookup
+Python. They exist so the test suite, CI, and the eval harness can
+exercise routing offline (no LLM call), and so the system has a
+deterministic answer when Haiku is unavailable.
 
 ```
-Today:                                  Proposed:
-                                        
-  classifier (Haiku) ─┐                   classifier+router (Haiku) ──┐
-                      ├─► tags ──►          (combined call,           ├─► module paths
-  routing.yaml ───────┤   router (Python)    one prompt)              │
-                      └─► modules                                     │
-                          (file paths)                                ▼
-                                          assembler reads paths directly
-                                          (no router.route() call)
+Canonical (runtime):                    Fallback (tests / offline):
+
+  classifier+router (Haiku) ──┐           classifier (Haiku) ─┐
+   (one combined call,        ├─► module                       ├─► tags ──►
+    one prompt)               │   paths                        │            router (Python)
+                              ▼                  routing.yaml ─┘   ───►     dict-lookup
+  assembler reads paths                                                       │
+  directly                                                                    ▼
+                                                                      module paths
+                                                                      (same shape as canonical)
 ```
 
 Same number of Haiku calls per query (the classifier was already running).
 What changes is **where the routing rules live**: prose in a prompt
 instead of YAML + Python.
 
-## Why move now
+## Why Haiku and not YAML
 
-The current router does its job. The argument for swapping is forward-
-looking — **future module growth introduces nuances that file-level
-deterministic routing can't handle gracefully:**
+The YAML router worked at 3 modules per product. The architecture flips
+to Haiku because **module growth introduces nuances that file-level
+deterministic routing handles poorly:**
 
 1. **Sub-section composition.** Imagine a `geo.md` that grows to cover
    Iran, Russia-Ukraine, China-Taiwan, and Cold War nukes. For an Iran
@@ -55,23 +59,23 @@ deterministic routing can't handle gracefully:**
    axes becomes a giant if/else chain. An LLM router reads the manifest
    and reasons.
 
-None of these matter at 3 modules per product. They start mattering at
-10+. Starting the prompt architecture now means the migration to
-sub-section composition is additive, not a rewrite.
+Even at 3 modules per product, having the prompt architecture in place
+means the v2 sub-section composition step (below) is additive — no
+rewrite when modules grow past file granularity.
 
 ## What stays, what goes
 
-| Layer | Today | Proposed |
+| Layer | Canonical (runtime) | Fallback (tests / offline) |
 |---|---|---|
-| `routing.yaml` (per product) | Tag→file mapping + priorities + budgets + model config | **Shrinks** — keeps budgets + model tiering + cache config. Tag/priority blocks move into the router prompt. |
-| `router.py` | 50 lines, dict lookup | **Thin shim** — validates Haiku's output (file paths exist, ≤ max_conditional), dedupes, returns. Maybe 15 lines. |
-| `router_prompt.md` (per product) | Doesn't exist | **New.** The routing rules as prose, read by Haiku. |
-| `tests/test_router.py` | Tests dict-lookup logic | **Becomes a "shim contract" test** — given a stubbed Haiku response, assembler reads it correctly. The "routing accuracy" tests move to eval (since LLM is stochastic, you measure with cases, not asserts). |
-| `assembler.py` | Calls `router.route(product, tags)` | Calls `router.route(product, query, signals)` — same function name, body uses Haiku now. |
+| `router_prompt.md` (per product) | The routing rules as prose, read by Haiku. Single source of truth. | Not used. |
+| `routing.yaml` (per product) | Holds **only** budgets + model tiering + cache config. Tag/priority blocks duplicated here for the fallback path. | Tag→file mapping + priorities + max_conditional cap — same rules as the prompt, expressed as YAML. |
+| `router.py` | Not called directly by the runtime. | 50 lines, dict lookup against `routing.yaml`. Used by tests, validate, and `python -m m3xa_souls.assembler --product X --tags Y`. |
+| `tests/test_router.py` | — | Tests the YAML fallback. Routing-quality tests for the Haiku path live in `eval/`. |
+| `assembler.py` | Reads module paths from Haiku output. | Calls `router.route(product, tags)` (the YAML path). |
 
-## The v1 prompt (today's deliverable)
+## The v1 prompts (canonical)
 
-Two draft prompts shipped alongside this doc:
+Two prompts, one per product:
 
 - `m3xa/router_prompt.md` — global macro/geo, 3 modules (geo / polymarket / charts)
 - `m3xabr/router_prompt.md` — Brasil, 2 active modules (polymarket / charts) + 1 disabled (brazilbrief)
@@ -83,7 +87,7 @@ Both share the same shape:
 - **Return contract** — JSON with `modules` + `reasoning`
 
 The prompts are intentionally **v1 simple**: whole-file routing only.
-Sub-section composition is reserved for v2.
+Sub-section composition is the v2 extension below.
 
 ## The v2 extension — sub-section composition
 
@@ -122,38 +126,32 @@ nothing about the surrounding architecture moves.
 
 ## Tradeoff matrix
 
-| | Python router (today) | Haiku v1 (this draft) | Haiku v2 (sub-sections) |
+| | YAML fallback (offline / tests) | Haiku v1 (runtime — canonical) | Haiku v2 (sub-sections — future) |
 |---|---|---|---|
-| LLM calls per query | 1 (classifier) | 1 (combined) | 1 (combined) |
+| LLM calls per query | 0 | 1 (combined with classifier) | 1 (combined) |
 | Determinism | High | Medium — LLM stochasticity | Lower — more degrees of freedom |
 | Module granularity | Whole file | Whole file | Section-level |
 | Where rules live | `routing.yaml` (~30 lines) | `router_prompt.md` (~50 lines prose) | Same + section annotations in modules |
-| Adding a module | Edit YAML, write tests | Edit prompt (one paragraph) | Same + add section markers |
+| Adding a module | Edit YAML + write test | Edit prompt (one paragraph) — keep YAML in sync for fallback | Same + add section markers |
 | Audit per query | Trivial (deterministic) | Read `reasoning` field | Read `reasoning` field |
 | Failure modes | Tag has no match → empty modules | Same + "Haiku returned bad JSON" → empty modules (graceful) | Same |
-| Cost vs today | $0 extra | $0 extra (replaces 1 call with 1 call) | $0 extra |
+| Cost overhead | $0 | $0 (replaces 1 call with 1 call) | $0 |
 
-## When to implement
+## Keeping the YAML fallback honest
 
-Not now. The v1 prompts in this commit are **design artifacts** — they
-sit in the repo so:
-- They can be read, reviewed, and iterated as prose.
-- A future implementer (or future-you) has a concrete contract to wire up.
-- The architecture is documented before any code change happens.
+Because YAML is the fallback, the two paths must agree on routing
+*decisions* — same `(product, query, signals)` → same module list,
+under normal conditions. To keep them in sync:
 
-Implementation gates:
-- v3.1 souls finalize (mostly done).
-- A second module per product gets added (would make Python router's
-  cap+priority logic start hurting — natural trigger for the swap).
-- OR: eval results show file-level routing missing nuances that
-  sub-section composition would catch.
-
-When the time comes, the swap is roughly:
-1. Add `router.route()` Haiku-driven variant (the old code path stays).
-2. Dual-run for a week: log Python-router decision vs Haiku-router decision,
-   compare to eval-set expected modules.
-3. Cut over once Haiku matches or beats Python on the eval set.
-4. Delete Python router + `routing.yaml` tag blocks (keep budgets/model/cache).
+1. Whenever a module is added, removed, or its trigger conditions
+   change, update **both** `router_prompt.md` (canonical) and
+   `routing.yaml` (fallback) in the same commit.
+2. The eval harness runs both paths against the pinned-context queries
+   and flags divergence. Divergence is acceptable when the Haiku path
+   reasonably wins (nuanced judgment); it's a bug when the YAML wins
+   (means the prompt is missing something).
+3. `validate.py` already enforces budgets and duplicate-rule detection;
+   add a "fallback parity" check on the eval set when it's wired.
 
 ## Open questions worth noting
 

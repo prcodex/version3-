@@ -1,9 +1,14 @@
-# Migration — Binary Domain Split (m3xa vs m3xabr)
+# Design — Binary Domain Split (m3xa vs m3xabr)
 
-Makes the domain decision **fully binary and deterministic**, driven by which
-Telegram bot received the query. Removes one redundant LLM call, removes one
-soul-level filter rule (structural now), and shrinks every retrieval set to
-the sources actually relevant for that product.
+> Status: **design rationale**, not an active deployment plan.
+> Captures the thinking behind why the domain decision should be
+> a fully binary, deterministic split at the bot/retrieval layer
+> rather than something the LLM classifier handles.
+
+The domain decision is **binary and deterministic**, driven by which
+Telegram bot received the query. This removes one redundant LLM call,
+removes one soul-level filter rule (structural now), and shrinks every
+retrieval set to the sources actually relevant for that product.
 
 ## The end state
 
@@ -176,19 +181,17 @@ When ready to take the classifier on, the relevant edits are:
 
 That's a separate PR.
 
-## Open question — Brazil queries arriving at @M3xA_bot
+## Decision — Brazil queries arriving at @M3xA_bot
 
-Once Step 2 ships, a Brazil question to @M3xA_bot retrieves only macro
-sources — likely returns "I don't have recent data on X." Two strategies:
+**Hard cut.** m3xa is the global macro/geo agent; it's not a Brazil specialist
+by design. A Brazil question reaching @M3xA_bot returns whatever the global
+feed has on the topic (usually little) without any redirect text. Users who
+want Brazil depth use @M3xabr_bot.
 
-- **Hard cut:** ship it, users learn to switch bots.
-- **Soft cut:** in m3xa response code, if retrieved rows < N and the query
-  matches a small list of Brazil keywords (Lula, Haddad, Galípolo, Selic,
-  Copom, PT, Bolsonaro, etc.), append `_For Brazil questions, try @M3xabr_bot._`
-  to the response. Keep for 2 weeks, then delete.
-
-Recommendation: soft cut for 2 weeks. Pre-decide the keyword list to avoid
-scope creep.
+No soft-cut redirect, no keyword sniffer. The product identity is the
+guarantee: "this is what m3xa knows, no apologies." A user who lands in the
+wrong bot is a routing error at the human layer, not something the system
+papers over.
 
 ## Verification checklist (per step)
 

@@ -30,15 +30,18 @@ v3.1 architecture without diving into Python.
         │      source set (macro for m3xa, brazil for m3xabr)      │
         │      → AGENT + DATA CONTEXT                              │
         │                                                          │
-        │  (b) Classification — one Haiku call (soul_classifier)   │
-        │      → JSON: tags, model, thinking_budget, agents        │
+        │  (b) Classification + Routing — ONE Haiku call against   │
+        │      {product}/router_prompt.md                          │
+        │      → JSON: { modules, model, thinking_budget,          │
+        │                agents, reasoning, confidence }           │
         └─────────────────────────────────────────────────────────┘
                                   │
                                   ▼
         ┌─────────────────────────────────────────────────────────┐
-        │  STAGE 3 — Routing                                        │
-        │  router.route(product, tags) → conditional module files  │
-        │  (max 2 modules, priority order)                          │
+        │  STAGE 3 — Modules selected (already done by 2b)         │
+        │  Haiku returned conditional module file paths directly.  │
+        │  Offline fallback path: router.route(product, tags) via  │
+        │  routing.yaml — used by pytest / validate / dry-runs.    │
         └─────────────────────────────────────────────────────────┘
                                   │
                                   ▼
@@ -88,7 +91,8 @@ vice versa. (The Python code is shared. The prompts are not.)
 
 ```
 m3xa/                                m3xabr/
-├── routing.yaml                     ├── routing.yaml
+├── router_prompt.md  ← Haiku router ├── router_prompt.md  ← Haiku router
+├── routing.yaml      ← fallback     ├── routing.yaml      ← fallback
 └── souls/                           └── souls/
     ├── core.md       ← identity        ├── core.md       ← identidade
     ├── overlay.md    ← source tiers    ├── overlay.md    ← tiers de fontes
@@ -173,18 +177,27 @@ Two important properties:
 See `docs/ROUTING.md` for the full classifier + router pipeline reference
 and the tag vocabulary.
 
-## Stage 3 — Routing (tags become files)
+## Stage 3 — Routing (Haiku picks modules)
 
-`router.route(product, tags)` walks the product's `routing.yaml`, filters
-out disabled or locale-mismatched modules, intersects each module's
-declared tags with the emitted tags, sorts by priority, and caps at
-`max_conditional` (currently 2).
+The canonical runtime calls Haiku with `{product}/router_prompt.md` as
+the system prompt, the user query as the user message, and a `signals`
+block (currently `polymarket_data_present`) as context. Haiku returns
+JSON with the module file paths to load and a one-line `reasoning` field
+explaining the pick.
 
-50 lines of pure Python. Deterministic. No LLM. Same `(product, tags)`
-always returns the same module list.
+In practice this is the **same Haiku call** that does classification —
+the prompt absorbs both responsibilities, so there's one model invocation
+per query for the entire "what is this query and what modules cover it"
+question.
 
-The router's only job is: **tags become file paths**. The "why" is in the
-modules; the "how" is in `routing.yaml`.
+`src/m3xa_souls/router.py` + `routing.yaml` are the **deterministic
+offline fallback** — same rules expressed as YAML + a 50-line dict
+lookup. Used by `pytest`, `validate`, `python -m m3xa_souls.assembler`,
+and anywhere an LLM call is impractical (CI, eval rehearsals, debugging).
+
+The two paths must stay in sync: any change to `router_prompt.md` needs
+the matching change in `routing.yaml`. The eval harness checks parity
+against the pinned-context query set.
 
 ## Stage 4 — Assembly (the souls become a prompt)
 
@@ -303,7 +316,7 @@ User in @M3xA_bot types: **"How has gold performed this month?"**
 | 1 | Bot = @M3xA_bot → `product = 'm3xa'`, retrieval scope = macro sources only | — |
 | 2a | LanceDB query: gold-tagged items from last 30 days, plus MARKETS LIVE snapshot for `GC=F` | — |
 | 2b | Classifier: `{v3_tags: ['price_action'], model: 'haiku', thinking_budget: 0, confidence: 0.94}` | — |
-| 3 | `router.route('m3xa', ['price_action'])` → `['m3xa/souls/modules/charts.md']` | `routing.yaml` |
+| 3 | Haiku router (`m3xa/router_prompt.md`) returns `{modules: ['m3xa/souls/modules/charts.md'], reasoning: "price-action query on gold → charts only"}`. Offline path: `router.route('m3xa', ['price_action'])` would give the same answer via `routing.yaml`. | `m3xa/router_prompt.md`, `routing.yaml` |
 | 4 | Assemble: `core.md` + `overlay.md` + `examples.md` + `charts.md` + DATA + `output.md` → 1,545 tok system prompt | `core.md`, `overlay.md`, `examples.md`, `charts.md`, `output.md` |
 | 5 | Bedrock Haiku 4.5 generates: markdown narrative on gold's last 30 days, ending with a MARKETS `<pre>` block, plus a `<!--CHART:GC=F:1mo:candlestick-->` tag at the end | — |
 | 6 | Telegram receives markdown + the chart tag triggers the chart image renderer | — |

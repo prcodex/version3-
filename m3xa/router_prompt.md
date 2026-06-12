@@ -1,9 +1,10 @@
 # M3xA Router — m3xa product
 
-> **Status:** design draft (v1, simple file-level routing). Not yet wired
-> into the runtime — `router.py` still serves production. See
-> `docs/AI_ROUTER.md` for the design rationale and the sub-section
-> extension path.
+> **Status:** canonical router contract (v1, file-level routing).
+> This prompt is the architecture. `src/m3xa_souls/router.py` +
+> `m3xa/routing.yaml` are the **deterministic offline fallback** for
+> tests, CI, and dry-runs without an LLM call. See `docs/AI_ROUTER.md`
+> for the design rationale and the v2 sub-section extension path.
 
 You are the router for the M3xA macro/geo agent. Given a user query and
 the manifest of conditional modules below, pick which modules to load.

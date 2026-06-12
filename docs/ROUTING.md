@@ -1,9 +1,12 @@
 # Routing — how a query reaches the right soul
 
 This doc explains the **classification + routing pipeline** that decides
-which v3.1 product and which modules a given query loads. Two components
-share the work: the `soul_classifier` (one Haiku call) and `router.py`
-(pure Python, deterministic).
+which v3.1 product and which modules a given query loads. The canonical
+runtime is a single Haiku call against a per-product router prompt
+(`m3xa/router_prompt.md` / `m3xabr/router_prompt.md`) that returns module
+paths directly. `src/m3xa_souls/router.py` + `routing.yaml` remain as the
+**deterministic offline fallback** for tests, CI, and dry-runs without
+an LLM call. See `docs/AI_ROUTER.md` for the rationale of that split.
 
 ## The pipeline at a glance
 
@@ -79,12 +82,37 @@ emit any subset of the **tag vocabulary** below.
 empty tags (no conditional modules load — the response runs on
 core + overlay + examples + output only).
 
-## Component 2 — router.py (pure Python, no LLM)
+## Component 2 — the Haiku router (canonical)
 
-**Where it lives:** `src/m3xa_souls/router.py` in this repo.
+**Where it lives:** the system prompt is `m3xa/router_prompt.md` /
+`m3xabr/router_prompt.md` in this repo — one per product.
 
-**What it does:** given a `product` (m3xa | m3xabr) and a list of `tags`,
-returns an ordered list of conditional module file paths to load.
+**What it does:** given the user query, a module manifest baked into the
+prompt, and a handful of context signals from the Gateway (currently just
+`polymarket_data_present`), it returns the module paths to load.
+
+The runtime calls Haiku with the prompt + the query + the signals as
+context, and parses the JSON response. The output shape:
+
+```json
+{
+  "modules": ["m3xa/souls/modules/geo.md", "m3xa/souls/modules/polymarket.md"],
+  "reasoning": "Iran war timeline + Polymarket data present → geo + polymarket."
+}
+```
+
+The same Haiku call that does classification also picks modules — there
+is no separate "Stage 2 → Stage 3" call. One prompt, one response.
+
+## Component 2 (fallback) — `router.py` + `routing.yaml`
+
+**Where it lives:** `src/m3xa_souls/router.py` and the per-product
+`routing.yaml` files.
+
+**What it does:** same job as the Haiku router, but as a deterministic
+dict-lookup. Given `(product, tags)` it returns the same module list every
+time — used by `pytest`, `validate`, `python -m m3xa_souls.assembler`, and
+any context where an LLM call is impractical or undesirable.
 
 ```python
 from m3xa_souls.router import route
@@ -100,8 +128,9 @@ route("m3xa", ["iran", "polymarket_data"])
 5. Sort candidates by `priority` (ascending — lower number wins).
 6. Cap at `max_conditional` (currently 2).
 
-The router is **fully deterministic**. Given the same `(product, tags)`
-it always returns the same module list. No LLM call here.
+The fallback path is **fully deterministic**. The routing rules in
+`routing.yaml` must stay in sync with `router_prompt.md` — any change to
+one needs the matching change in the other in the same commit.
 
 ## Tag vocabulary
 

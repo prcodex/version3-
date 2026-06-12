@@ -18,8 +18,8 @@ position-aware layered assembly targeting ≤2.6K instruction tokens worst case.
 flowchart TB
     subgraph RUNTIME["<b>⚡ Runtime — per query (Gateway)</b>"]
         direction TB
-        U(["<b>👤 User query</b><br/><b>Telegram / Web</b>"]) --> CLS["<b>soul_classifier</b><br/><b>emits product + tags</b><br/>m3xa · m3xabr<br/>iran · polymarket_data · price_action"]
-        CLS --> RTR["<b>router.py</b><br/><b>tags → modules</b><br/>priority: geo &gt; brief &gt; pm &gt; charts<br/><b>max 2 modules</b>"]
+        U(["<b>👤 User query</b><br/><b>Telegram / Web</b>"]) --> RTR["<b>🤖 Haiku router</b><br/>{product}/router_prompt.md<br/><b>one call: classify + route</b><br/>returns module paths + reasoning"]
+        RTR -.-> FALL["<b>⚙️ offline fallback</b><br/>router.py + routing.yaml<br/>pytest · validate · dry-run"]
         RTR --> ASM["<b>assembler.py</b><br/><b>position-aware concatenation</b><br/>+ token report"]
         ENT["<b>entity_*.md cards</b><br/><b>JIT injection</b> — only sources<br/>present in retrieved data"] --> FEED
         FEED[("<b>FeedCache / LanceDB</b><br/><b>118K+ rows</b><br/>AGENT + DATA CONTEXT")] --> ASM
@@ -62,7 +62,8 @@ flowchart TB
     click C3 "https://github.com/prcodex/version3-/tree/main/m3xa/souls/modules" _blank
     click C4 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/examples.md" _blank
     click C6 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
-    click RTR "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
+    click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/router_prompt.md" _blank
+    click FALL "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
     click ASM "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/assembler.py" _blank
     click VAL "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/validate.py" _blank
     click CMP "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/compiler.py" _blank
@@ -76,6 +77,8 @@ flowchart TB
     style ORDER fill:#dcfce7,stroke:#166534,stroke-width:3px,color:#0f172a
     style CI fill:#f3e8ff,stroke:#7e22ce,stroke-width:3px,color:#0f172a
     style HAIKU fill:#fed7aa,stroke:#c2410c,stroke-width:4px,color:#7c2d12
+    style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
+    style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
     style C5 fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#0f172a
     style FEED fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
     style ENT fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
@@ -109,9 +112,8 @@ Two products, two diagrams — same assembly grammar, different content. Each bl
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': {'fontSize': '22px', 'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'}, 'flowchart': {'htmlLabels': true, 'curve': 'basis', 'nodeSpacing': 55, 'rankSpacing': 80, 'padding': 18}}}%%
 flowchart TB
-    BOT(["<b>👤 @M3xA_bot · web</b><br/>English query"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xa</b><br/>tags ⊂ {iran · polymarket_data · price_action · trend · performance}"]
-    CLS --> RTR["<b>router</b> (m3xa/routing.yaml)<br/>priority: geo &gt; polymarket &gt; charts<br/><b>max 2 modules</b>"]
-    RTR -.-> FUT["<b>📝 future: Haiku router</b><br/>m3xa/router_prompt.md<br/>see docs/AI_ROUTER.md"]
+    BOT(["<b>👤 @M3xA_bot · web</b><br/>English query"]) --> RTR["<b>🤖 Haiku router</b><br/>m3xa/router_prompt.md<br/>one call: classify + route<br/>priority: geo &gt; polymarket &gt; charts<br/><b>max 2 modules</b>"]
+    RTR -.-> FALL["<b>⚙️ offline fallback</b><br/>router.py + m3xa/routing.yaml<br/>used by pytest / validate / dry-run"]
 
     subgraph ALWAYS["<b>🟦 ALWAYS LOADED · 1,494 tok</b>"]
         direction TB
@@ -150,9 +152,8 @@ flowchart TB
     click P "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/polymarket.md" _blank
     click CH "https://github.com/prcodex/version3-/blob/main/m3xa/souls/modules/charts.md" _blank
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xa/souls/output.md" _blank
-    click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
-    click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
-    click FUT "https://github.com/prcodex/version3-/blob/main/docs/AI_ROUTER.md" _blank
+    click RTR "https://github.com/prcodex/version3-/blob/main/m3xa/router_prompt.md" _blank
+    click FALL "https://github.com/prcodex/version3-/blob/main/m3xa/routing.yaml" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -163,7 +164,8 @@ flowchart TB
     style G fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
-    style FUT fill:#fef2f2,stroke:#9333ea,stroke-width:2px,stroke-dasharray:6 4,color:#581c87
+    style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
+    style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
 ```
 
 ### m3xabr — Brazil (PT-BR)
@@ -171,9 +173,8 @@ flowchart TB
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': {'fontSize': '22px', 'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'}, 'flowchart': {'htmlLabels': true, 'curve': 'basis', 'nodeSpacing': 55, 'rankSpacing': 80, 'padding': 18}}}%%
 flowchart TB
-    BOT(["<b>👤 @M3xabr_bot · web</b><br/>Pergunta em PT-BR"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xabr</b><br/>tags ⊂ {polymarket_data · price_action · trend · performance}"]
-    CLS --> RTR["<b>router</b> (m3xabr/routing.yaml)<br/>priority: polymarket &gt; charts<br/><b>max 2 modules</b>"]
-    RTR -.-> FUT["<b>📝 futuro: Haiku router</b><br/>m3xabr/router_prompt.md<br/>ver docs/AI_ROUTER.md"]
+    BOT(["<b>👤 @M3xabr_bot · web</b><br/>Pergunta em PT-BR"]) --> RTR["<b>🤖 Haiku router</b><br/>m3xabr/router_prompt.md<br/>uma chamada: classificar + rotear<br/>prioridade: polymarket &gt; charts<br/><b>máx 2 módulos</b>"]
+    RTR -.-> FALL["<b>⚙️ fallback offline</b><br/>router.py + m3xabr/routing.yaml<br/>usado em pytest / validate / dry-run"]
 
     subgraph ALWAYS["<b>🟦 SEMPRE CARREGADO · 1,484 tok</b>"]
         direction TB
@@ -215,9 +216,8 @@ flowchart TB
     click CH "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/charts.md" _blank
     click BB "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/modules/brazilbrief.md" _blank
     click OUT "https://github.com/prcodex/version3-/blob/main/m3xabr/souls/output.md" _blank
-    click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
-    click CLS "https://github.com/prcodex/version3-/blob/main/src/m3xa_souls/router.py" _blank
-    click FUT "https://github.com/prcodex/version3-/blob/main/docs/AI_ROUTER.md" _blank
+    click RTR "https://github.com/prcodex/version3-/blob/main/m3xabr/router_prompt.md" _blank
+    click FALL "https://github.com/prcodex/version3-/blob/main/m3xabr/routing.yaml" _blank
 
     style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
     style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
@@ -229,7 +229,8 @@ flowchart TB
     style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
     style BB fill:#e5e7eb,stroke:#9ca3af,stroke-width:2px,stroke-dasharray:5 5,color:#475569
-    style FUT fill:#fef2f2,stroke:#9333ea,stroke-width:2px,stroke-dasharray:6 4,color:#581c87
+    style RTR fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
+    style FALL fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#475569
 ```
 
 ## v3.1 upgrades
@@ -274,11 +275,12 @@ See **[docs/MIGRATION_BINARY.md](docs/MIGRATION_BINARY.md)** for the
 design rationale behind the binary domain split (m3xa vs m3xabr at the
 retrieval layer).
 
-See **[docs/AI_ROUTER.md](docs/AI_ROUTER.md)** for the proposed shift
-from Python `router.py` to a Haiku-driven router prompt (`m3xa/router_prompt.md`
-and `m3xabr/router_prompt.md`). Status: design draft, not implemented —
-addresses future module growth (sub-section composition, context-dependent
-priority) without changing the surrounding architecture.
+See **[docs/AI_ROUTER.md](docs/AI_ROUTER.md)** for the **canonical
+Haiku-driven routing architecture** — `m3xa/router_prompt.md` and
+`m3xabr/router_prompt.md` are the router contracts; `src/m3xa_souls/router.py`
++ `routing.yaml` remain as the deterministic offline fallback (used by
+`pytest`, `validate`, dry-runs). Includes the v2 sub-section composition
+extension path.
 
 ## Corrections pipeline
 Rubric-collector auto-detections land in `corrections/candidates.jsonl` — never in a live

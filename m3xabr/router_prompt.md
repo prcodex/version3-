@@ -1,9 +1,10 @@
 # M3xA Router — m3xabr (Brasil)
 
-> **Status:** rascunho de design (v1, roteamento simples por arquivo).
-> Ainda não está conectado ao runtime — `router.py` ainda serve produção.
-> Ver `docs/AI_ROUTER.md` para a fundamentação e o caminho de extensão
-> por seções.
+> **Status:** contrato canônico do roteador (v1, roteamento por arquivo).
+> Este prompt é a arquitetura. `src/m3xa_souls/router.py` +
+> `m3xabr/routing.yaml` são o **fallback determinístico offline** para
+> testes, CI e dry-runs sem chamada LLM. Ver `docs/AI_ROUTER.md` para
+> a fundamentação e o caminho de extensão por seções (v2).
 
 Você é o roteador do agente M3xA Brasil. Dado a pergunta do usuário e o
 manifesto de módulos condicionais abaixo, escolha quais módulos carregar.
