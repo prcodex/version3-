@@ -14,45 +14,48 @@ position-aware layered assembly targeting ≤2.6K instruction tokens worst case.
 ## Architecture
 
 ```mermaid
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '22px', 'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'}, 'flowchart': {'htmlLabels': true, 'curve': 'basis', 'nodeSpacing': 55, 'rankSpacing': 90, 'padding': 20}}}%%
 flowchart TB
-    subgraph RUNTIME["⚡ Runtime — per query (Gateway)"]
+    subgraph RUNTIME["<b>⚡ Runtime — per query (Gateway)</b>"]
         direction TB
-        U(["👤 User query — Telegram / Web"]) --> CLS["soul_classifier — emits locale + tags<br/>iran · brazilbrief · polymarket_data · price_action"]
-        CLS --> RTR["router.py<br/>tags → modules · priority geo &gt; brief &gt; pm &gt; charts · max 2"]
-        RTR --> ASM["assembler.py<br/>position-aware concatenation + token report"]
-        ENT["entity_*.md cards — JIT injection<br/>only sources present in retrieved data"] --> FEED
-        FEED[("FeedCache / LanceDB 118K+<br/>AGENT + DATA CONTEXT")] --> ASM
-        ASM --> HAIKU["Claude Haiku 4.5 — Bedrock"]
-        HAIKU --> TG(["📱 Telegram response"])
+        U(["<b>👤 User query</b><br/><b>Telegram / Web</b>"]) --> CLS["<b>soul_classifier</b><br/><b>emits locale + tags</b><br/>iran · brazilbrief<br/>polymarket_data · price_action"]
+        CLS --> RTR["<b>router.py</b><br/><b>tags → modules</b><br/>priority: geo &gt; brief &gt; pm &gt; charts<br/><b>max 2 modules</b>"]
+        RTR --> ASM["<b>assembler.py</b><br/><b>position-aware concatenation</b><br/>+ token report"]
+        ENT["<b>entity_*.md cards</b><br/><b>JIT injection</b> — only sources<br/>present in retrieved data"] --> FEED
+        FEED[("<b>FeedCache / LanceDB</b><br/><b>118K+ rows</b><br/>AGENT + DATA CONTEXT")] --> ASM
+        ASM --> HAIKU["<b>🧠 Claude Haiku 4.5</b><br/><b>via Bedrock</b>"]
+        HAIKU --> TG(["<b>📱 Telegram response</b>"])
     end
 
-    subgraph ORDER["🧩 Assembly order — worst case 1,886 tok measured (budget 2,600)"]
+    subgraph ORDER["<b>🧩 Assembly order — worst case 1,886 tok measured (budget 2,600)</b>"]
         direction TB
-        C1["1. core/soul_core.md — 712 tok<br/>identity · grounding · time · citation"]
-        C2["2. overlays/global.md 376 tok | overlays/brazil.md 344 tok<br/>source tiers · Brazil hard filter · identity rules"]
-        C3["3. conditional modules — max 2<br/>geo 302 · polymarket 139 · brazilbrief 187 · charts 112"]
-        C4["4. examples/examples.md — 196 tok<br/>3 canonical few-shots"]
-        C5["5. AGENT_AND_DATA_CONTEXT placeholder<br/>Gateway inserts live feed here"]
-        C6["6. output/global.md 161 | output/brazil.md 142<br/>format rules LAST — recency effect"]
+        C1["<b>1. core/soul_core.md</b><br/><b>712 tok</b><br/>identity · grounding · time · citation"]
+        C2["<b>2. overlays/global.md 376 tok</b><br/><b>overlays/brazil.md 344 tok</b><br/>source tiers · Brazil hard filter<br/>identity rules"]
+        C3["<b>3. conditional modules — max 2</b><br/>geo 302 · polymarket 139<br/>brazilbrief 187 · charts 112"]
+        C4["<b>4. examples/examples.md</b><br/><b>196 tok</b><br/>3 canonical few-shots"]
+        C5["<b>5. AGENT_AND_DATA_CONTEXT</b><br/>placeholder<br/>Gateway inserts live feed here"]
+        C6["<b>6. output/global.md 161 tok</b><br/><b>output/brazil.md 142 tok</b><br/><b>format rules LAST</b> — recency effect"]
         C1 --> C2 --> C3 --> C4 --> C5 --> C6
     end
-    ASM -. builds .-> C1
+    ASM -. <b>builds</b> .-> C1
 
-    subgraph CI["🔁 Build · eval · governance"]
+    subgraph CI["<b>🔁 Build · eval · governance</b>"]
         direction TB
-        GH["GitHub — prcodex/version3-"] --> ACT["GitHub Actions CI"]
-        ACT --> VAL["validate.py<br/>budgets · duplicate rules · forbidden patterns"]
-        ACT --> TST["pytest — 9 tests"]
-        ACT --> CMP["compiler.py → dist/<br/>soul_global_compiled ~2.0K · soul_brazil_compiled ~2.2K"]
-        CMP --> DEP["deploy: sync dist/ → House store<br/>bridge mode until Gateway assembles natively"]
-        RC["rubric-collector auto-detections"] --> CAND["corrections/candidates.jsonl<br/>status: candidate — NEVER touches a live soul"]
-        CAND -- "human PROMOTE → positive rule" --> MODS["owning module in souls/"]
-        CAND -- REJECT --> HIST["corrections/history.jsonl"]
-        EVQ["eval/queries.yaml — 12 pinned queries"] --> EVR["run_eval.py — OLD vs NEW<br/>scored with evaluator_rubric.md"]
-        EVR -- "cutover: NEW ≥ OLD everywhere" --> DEP
+        GH["<b>GitHub</b><br/>prcodex/version3-"] --> ACT["<b>GitHub Actions CI</b>"]
+        ACT --> VAL["<b>validate.py</b><br/>budgets · duplicate rules<br/>forbidden patterns"]
+        ACT --> TST["<b>pytest</b><br/>9 tests"]
+        ACT --> CMP["<b>compiler.py → dist/</b><br/>soul_global_compiled ~2.0K tok<br/>soul_brazil_compiled ~2.2K tok"]
+        CMP --> DEP["<b>deploy</b><br/>sync dist/ → House store<br/>bridge mode until Gateway<br/>assembles natively"]
+        RC["<b>rubric-collector</b><br/>auto-detections"] --> CAND["<b>corrections/candidates.jsonl</b><br/>status: candidate<br/><b>NEVER touches a live soul</b>"]
+        CAND -- "<b>human PROMOTE</b><br/>→ positive rule" --> MODS["<b>owning module</b><br/>in souls/"]
+        CAND -- "<b>REJECT</b>" --> HIST["<b>corrections/history.jsonl</b>"]
+        EVQ["<b>eval/queries.yaml</b><br/>12 pinned queries"] --> EVR["<b>run_eval.py — OLD vs NEW</b><br/>scored with evaluator_rubric.md"]
+        EVR -- "<b>cutover:</b><br/>NEW ≥ OLD everywhere" --> DEP
     end
-    DEP -. loaded by .-> ASM
-    MODS -. re-validate + recompile .-> ACT
+    DEP -. <b>loaded by</b> .-> ASM
+    MODS -. <b>re-validate + recompile</b> .-> ACT
+
+    C6 ~~~ GH
 
     click C1 "https://github.com/prcodex/version3-/blob/main/souls/core/soul_core.md" _blank
     click C2 "https://github.com/prcodex/version3-/tree/main/souls/overlays" _blank
@@ -69,11 +72,16 @@ flowchart TB
     click GH "https://github.com/prcodex/version3-" _blank
     click ACT "https://github.com/prcodex/version3-/blob/main/.github/workflows/ci.yml" _blank
 
-    style RUNTIME fill:#0b2942,stroke:#4aa3df,color:#e8f1f8
-    style ORDER fill:#1c2b1c,stroke:#6abf69,color:#e9f5e9
-    style CI fill:#2b1c2b,stroke:#c77dba,color:#f5e9f5
-    style HAIKU fill:#d97706,stroke:#92400e,color:#fff
-    style C5 fill:#374151,stroke:#9ca3af,color:#fff,stroke-dasharray: 5 5
+    style RUNTIME fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
+    style ORDER fill:#dcfce7,stroke:#166534,stroke-width:3px,color:#0f172a
+    style CI fill:#f3e8ff,stroke:#7e22ce,stroke-width:3px,color:#0f172a
+    style HAIKU fill:#fed7aa,stroke:#c2410c,stroke-width:4px,color:#7c2d12
+    style C5 fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4,color:#0f172a
+    style FEED fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style ENT fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style CAND fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#0f172a
+    style MODS fill:#dcfce7,stroke:#166534,stroke-width:2px,color:#0f172a
+    style DEP fill:#ddd6fe,stroke:#6d28d9,stroke-width:2px,color:#0f172a
 ```
 
 ## Layout
