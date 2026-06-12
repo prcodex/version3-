@@ -1,0 +1,16 @@
+# 12-query eval set: OLD soul vs NEW assembly, scored with evaluator_rubric.md
+# Cutover criterion: NEW >= OLD on every rubric category,
+# strictly better on format compliance + grounding.
+queries:
+  - {id: geo1,    locale: global, tags: [iran, polymarket_data], text: "Last 12h of the Iran war — full update"}
+  - {id: geo2,    locale: global, tags: [iran],                  text: "Is the Strait of Hormuz open right now? Market impact?"}
+  - {id: geo3,    locale: global, tags: [geopolitics],           text: "China's role in Iran mediation this week"}
+  - {id: src1,    locale: global, tags: [],                      text: "Any Gavekal notes recently?"}
+  - {id: src2,    locale: global, tags: [],                      text: "What does Tony P say about equity positioning?"}
+  - {id: src3,    locale: global, tags: [],                      text: "What does Goldman think about rate cuts?"}
+  - {id: broad1,  locale: global, tags: [polymarket_data],       text: "Deep summary of the week in macro"}
+  - {id: broad2,  locale: global, tags: [],                      text: "What moved markets yesterday?"}
+  - {id: br1,     locale: brazil, tags: [brazilbrief],           text: "#brazilbrief18"}
+  - {id: br2,     locale: brazil, tags: [brazilbrief, polymarket_data], text: "#brazilbrief6"}
+  - {id: br3,     locale: brazil, tags: [],                      text: "Últimas pesquisas eleitorais — comparar institutos"}
+  - {id: chart1,  locale: global, tags: [price_action],          text: "How has gold performed this month?"}

@@ -1,0 +1,47 @@
+# Soul assembly routing — single source of truth
+version: 3
+locales: [global, brazil]
+
+always:
+  - souls/core/soul_core.md
+  - souls/overlays/{locale}.md
+  - souls/examples/examples.md
+
+# Output format modules are assembled LAST (adjacent to generation)
+last:
+  - souls/output/{locale}.md
+
+conditional:
+  geo:
+    tags: [iran, war, geopolitics, conflict, hormuz]
+    file: souls/modules/geo.md
+    priority: 1
+  brazilbrief:
+    tags: [brazilbrief]
+    file: souls/modules/brazilbrief.md
+    priority: 2
+    locales: [brazil]
+  polymarket:
+    tags: [polymarket_data]          # set by Gateway when Polymarket data is in context
+    file: souls/modules/polymarket.md
+    priority: 3
+  charts:
+    tags: [price_action, trend, performance]
+    file: souls/modules/charts.md
+    priority: 4
+
+max_conditional: 2
+
+# Token budgets (approx, chars/3.6) — validate.py enforces per-file; assembler enforces total
+budgets:
+  total: 2600
+  souls/core/soul_core.md: 950
+  souls/overlays/global.md: 500
+  souls/overlays/brazil.md: 520
+  souls/examples/examples.md: 450
+  souls/modules/geo.md: 420
+  souls/modules/polymarket.md: 180
+  souls/modules/brazilbrief.md: 320
+  souls/modules/charts.md: 160
+  souls/output/global.md: 280
+  souls/output/brazil.md: 280
