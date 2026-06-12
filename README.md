@@ -1,6 +1,6 @@
 # M3xA Souls v3 — Layered Composition Architecture
 
-Modular, classifier-routed soul system for M3xA response agents (Haiku 4.5 via Bedrock).
+Modular, Haiku-routed soul system for M3xA response agents (Haiku 4.5 via Bedrock).
 Replaces monolithic `soul_global.md` / `soul_brazil.md` (~5K tokens, 60+ directives) with
 position-aware layered assembly targeting ≤2.6K instruction tokens worst case.
 
@@ -123,7 +123,7 @@ flowchart TB
         A1 --> A2 --> A3
     end
 
-    subgraph COND["<b>🟨 CONDITIONAL · classifier-routed · max 2</b>"]
+    subgraph COND["<b>🟨 CONDITIONAL · Haiku router picks · max 2</b>"]
         direction TB
         G["<b>geo.md · 336 tok</b> · priority 1<br/>tags: iran · war · geopolitics<br/>conflict · hormuz<br/><b>📐 schema: geo_response.schema.json</b><br/>(structured output via constrained decoding)"]
         P["<b>polymarket.md · 139 tok</b> · priority 2<br/>tag: <b>polymarket_data</b><br/>(set by Gateway when PM data in context)"]
@@ -184,7 +184,7 @@ flowchart TB
         A1 --> A2 --> A3
     end
 
-    subgraph COND["<b>🟨 CONDICIONAL · roteado pelo classificador · max 2</b>"]
+    subgraph COND["<b>🟨 CONDICIONAL · Haiku router escolhe · max 2</b>"]
         direction TB
         P["<b>polymarket.md · 119 tok</b> · priority 1<br/>tag: <b>polymarket_data</b><br/>(definido pelo Gateway quando há dados PM)"]
         CH["<b>charts.md · 108 tok</b> · priority 2<br/>tags: price_action · trend · performance"]
@@ -267,9 +267,9 @@ file organization as the central thread. Start here for the
 conceptual model.
 
 See **[docs/ROUTING.md](docs/ROUTING.md)** for the classification +
-routing pipeline deep dive: how the soul_classifier (Haiku, JSON output)
-and `router.py` (deterministic Python) work together, the tag
-vocabulary, worked examples, and failure modes.
+routing pipeline deep dive: how the Haiku router (one call against
+`router_prompt.md`) and the YAML/Python fallback work together, the
+trigger vocabulary, worked examples, and failure modes.
 
 See **[docs/MIGRATION_BINARY.md](docs/MIGRATION_BINARY.md)** for the
 design rationale behind the binary domain split (m3xa vs m3xabr at the
