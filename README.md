@@ -112,17 +112,17 @@ flowchart TB
     BOT(["<b>👤 @M3xA_bot · web</b><br/>English query"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xa</b><br/>tags ⊂ {iran · polymarket_data · price_action · trend · performance}"]
     CLS --> RTR["<b>router</b> (m3xa/routing.yaml)<br/>priority: geo &gt; polymarket &gt; charts<br/><b>max 2 modules</b>"]
 
-    subgraph ALWAYS["<b>🟦 ALWAYS LOADED · 1,284 tok</b>"]
+    subgraph ALWAYS["<b>🟦 ALWAYS LOADED · 1,494 tok</b>"]
         direction TB
-        A1["<b>core.md · 712 tok</b><br/>identity (EN) · grounding<br/>time · citation"]
-        A2["<b>overlay.md · 376 tok</b><br/>T1/T2/T3 source tiers<br/><b>Brazil hard-filter</b>"]
+        A1["<b>core.md · 830 tok</b><br/>identity · grounding · proactive patterns<br/>time · citation"]
+        A2["<b>overlay.md · 468 tok</b><br/>T1/T2/T3 source tiers (named + cited)<br/><b>Brazil hard-filter</b>"]
         A3["<b>examples.md · 196 tok</b><br/>3 canonical few-shots"]
         A1 --> A2 --> A3
     end
 
     subgraph COND["<b>🟨 CONDITIONAL · classifier-routed · max 2</b>"]
         direction TB
-        G["<b>geo.md · 325 tok</b> · priority 1<br/>tags: iran · war · geopolitics<br/>conflict · hormuz<br/><b>📐 schema: geo_response.schema.json</b><br/>(structured output via constrained decoding)"]
+        G["<b>geo.md · 336 tok</b> · priority 1<br/>tags: iran · war · geopolitics<br/>conflict · hormuz<br/><b>📐 schema: geo_response.schema.json</b><br/>(structured output via constrained decoding)"]
         P["<b>polymarket.md · 139 tok</b> · priority 2<br/>tag: <b>polymarket_data</b><br/>(set by Gateway when PM data in context)"]
         CH["<b>charts.md · 112 tok</b> · priority 3<br/>tags: price_action · trend · performance"]
     end
@@ -139,7 +139,7 @@ flowchart TB
     MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control on static prefix<br/>data context rides in user message"]
     CACHE --> GEN(["<b>📤 Telegram response</b><br/>via renderer.render_geo() when schema fires"])
 
-    META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>1,909 tok</b><br/>TYPICAL (no tags): 1,445 tok<br/>BUDGET: 2,600 tok"]
+    META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>2,130 tok</b><br/>TYPICAL (no tags): 1,655 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
 
     click A1 "https://github.com/prcodex/version3-/blob/main/m3xa/souls/core.md" _blank
@@ -171,10 +171,10 @@ flowchart TB
     BOT(["<b>👤 @M3xabr_bot · web</b><br/>Pergunta em PT-BR"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xabr</b><br/>tags ⊂ {polymarket_data · price_action · trend · performance}"]
     CLS --> RTR["<b>router</b> (m3xabr/routing.yaml)<br/>priority: polymarket &gt; charts<br/><b>max 2 modules</b>"]
 
-    subgraph ALWAYS["<b>🟦 SEMPRE CARREGADO · 1,203 tok</b>"]
+    subgraph ALWAYS["<b>🟦 SEMPRE CARREGADO · 1,484 tok</b>"]
         direction TB
-        A1["<b>core.md · 699 tok</b><br/>identidade (PT-BR) · fundamentação<br/>tempo · citação"]
-        A2["<b>overlay.md · 344 tok</b><br/>Tiers de fontes T1/T2/T3<br/>regras rígidas de identidade<br/>câmbio · pesquisas"]
+        A1["<b>core.md · 835 tok</b><br/>identidade (PT-BR) · fundamentação<br/><b>POLÍTICA BRASILEIRA (Exec/Leg/Judic)</b><br/>tempo · citação"]
+        A2["<b>overlay.md · 489 tok</b><br/>Tiers de fontes T1/T2/T3 (nomes + templates)<br/>regras rígidas de identidade<br/>câmbio · pesquisas (metodologia)"]
         A3["<b>examples.md · 160 tok</b><br/>exemplos canônicos em PT-BR"]
         A1 --> A2 --> A3
     end
@@ -198,7 +198,7 @@ flowchart TB
     MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control no prefixo estático<br/>data context vai na user message"]
     CACHE --> GEN(["<b>📤 Resposta no Telegram</b>"])
 
-    META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (polymarket + charts): <b>1,572 tok</b><br/>TÍPICO (sem tags): 1,345 tok<br/>BUDGET: 2,600 tok"]
+    META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (polymarket + charts): <b>1,853 tok</b><br/>TÍPICO (sem tags): 1,626 tok<br/>BUDGET: 2,600 tok"]
     GEN -.-> META
 
     NOTE["<b>📌 Notas específicas do m3xabr</b><br/>• Sem módulo geo — geo queries roteadas pra m3xa<br/>• Sem schema estruturado — Haiku livre<br/>• brazilbrief mantido por spec, mas <b>NÃO carregado</b><br/>(bastidores narrativo voltará via Sonnet override)"]

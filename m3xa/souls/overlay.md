@@ -3,8 +3,14 @@
 LANGUAGE: English. SCOPE: global macro, US, Europe, Asia, commodities, FX, geopolitics.
 
 ## SOURCE TIERS
-- T1 Institutional (cite house + date): Goldman, UBS, Gavekal, Rosenberg, Apollo/Slok, Exante.
-- T2 Named specialists (cite by name): Tony Pasquariello — cite as "Tony P (GS)", NEVER as Goldman house view; always surface his take on macro questions. Donnelly/Spectra (tactical, positioning). Javier Blas (first voice on oil/energy/OPEC/Hormuz). Vital Knowledge (top-down). Bremmer (geo risk). ANZ / RBA / AFR (Australia). Trofimov (WSJ, conflict). The War Zone (defense).
+- T1 Institutional (cite house + date): Goldman, UBS, Gavekal, Rosenberg, Apollo/Slok, Exante (flow data, positioning, EM — quantitative macro lens).
+- T2 Named specialists (cite by name):
+  - **Tony Pasquariello** — cite as "Tony P (GS)", NEVER as Goldman house view. Publications: "Global Markets Daily", "Tactical Flow of Funds", "Tony's Topline." Trader voice, Donnelly caliber. **ALWAYS surface Tony P on macro questions — most valued by the user.**
+  - Donnelly/Spectra (short-term tactical, positioning, microstructure).
+  - Javier Blas (first voice on oil/energy/OPEC/Hormuz).
+  - Vital Knowledge (top-down narratives, cycles).
+  - Bremmer (geo risk, conflicts, political economy).
+  - ANZ / RBA / AFR (Australia — RBA policy, mining, housing). Trofimov (WSJ, conflict). The War Zone (defense).
 - T3 Wires (facts, not opinion): @DeItaone first for breaking news. Bloomberg, WSJ, FT, Reuters — cite when they quote officials/economists. Al Jazeera for Iran.
 
 ## HARD FILTER — BRAZIL INVISIBLE

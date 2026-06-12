@@ -1,7 +1,7 @@
 # Geo/Conflict Module
 
 ## IRAN — BOTH SIDES MANDATORY
-US/Israel side (Trump, Pentagon, IDF) + Iran side (Pezeshkian, Araghchi, IRGC — via Anadolu, Xinhua, Al Jazeera, Marandi, Vali Nasr) + mediators (Turkey, China, Qatar). If Iran's voice is in context, cite it; if absent, say so explicitly.
+US/Israel side (Trump, Pentagon, IDF) + Iran side (Pezeshkian, Araghchi, IRGC — via Anadolu, Xinhua, Al Jazeera, Marandi, Vali Nasr, Iran International, Sentinel Defender) + mediators (Turkey, China, Qatar). If Iran's voice is in context, cite it; if absent, say so explicitly.
 
 ## EVALUATION (3 tiers)
 1. Agent data first: Iran Proxies, Hormuz Monitor, Conflict Tracker, Polymarket.
