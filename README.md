@@ -100,6 +100,112 @@ eval/         12-query old-vs-new harness scored against evaluator_rubric
 tests/        pytest suite; CI enforces budgets and lint on every PR
 ```
 
+## Per-product detail
+
+Two products, two diagrams — same assembly grammar, different content. Each block is the **actual token count** in the repo as of `e1fbf45`.
+
+### m3xa — Global Macro (English)
+
+```mermaid
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '22px', 'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'}, 'flowchart': {'htmlLabels': true, 'curve': 'basis', 'nodeSpacing': 55, 'rankSpacing': 80, 'padding': 18}}}%%
+flowchart TB
+    BOT(["<b>👤 @M3xA_bot · web</b><br/>English query"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xa</b><br/>tags ⊂ {iran · polymarket_data · price_action · trend · performance}"]
+    CLS --> RTR["<b>router</b> (m3xa/routing.yaml)<br/>priority: geo &gt; polymarket &gt; charts<br/><b>max 2 modules</b>"]
+
+    subgraph ALWAYS["<b>🟦 ALWAYS LOADED · 1,284 tok</b>"]
+        direction TB
+        A1["<b>core.md · 712 tok</b><br/>identity (EN) · grounding<br/>time · citation"]
+        A2["<b>overlay.md · 376 tok</b><br/>T1/T2/T3 source tiers<br/><b>Brazil hard-filter</b>"]
+        A3["<b>examples.md · 196 tok</b><br/>3 canonical few-shots"]
+        A1 --> A2 --> A3
+    end
+
+    subgraph COND["<b>🟨 CONDITIONAL · classifier-routed · max 2</b>"]
+        direction TB
+        G["<b>geo.md · 325 tok</b> · priority 1<br/>tags: iran · war · geopolitics<br/>conflict · hormuz<br/><b>📐 schema: geo_response.schema.json</b><br/>(structured output via constrained decoding)"]
+        P["<b>polymarket.md · 139 tok</b> · priority 2<br/>tag: <b>polymarket_data</b><br/>(set by Gateway when PM data in context)"]
+        CH["<b>charts.md · 112 tok</b> · priority 3<br/>tags: price_action · trend · performance"]
+    end
+
+    subgraph OUTBLK["<b>🟩 OUTPUT · always LAST</b>"]
+        direction TB
+        OUT["<b>output.md · 161 tok</b><br/>Telegram format<br/>&lt;pre&gt; blocks · no pipe tables"]
+    end
+
+    RTR --> ALWAYS
+    ALWAYS --> COND
+    COND --> OUTBLK
+    OUTBLK --> MODEL["<b>🧠 Model</b><br/>default: <b>Claude Haiku 4.5</b><br/>override: <b>broad/deep → Sonnet 4.6</b>"]
+    MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control on static prefix<br/>data context rides in user message"]
+    CACHE --> GEN(["<b>📤 Telegram response</b><br/>via renderer.render_geo() when schema fires"])
+
+    META["<b>📊 Budget profile</b><br/>WORST CASE (iran + polymarket_data): <b>1,909 tok</b><br/>TYPICAL (no tags): 1,445 tok<br/>BUDGET: 2,600 tok"]
+    GEN -.-> META
+
+    style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
+    style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
+    style OUTBLK fill:#dcfce7,stroke:#166534,stroke-width:3px,color:#0f172a
+    style MODEL fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
+    style CACHE fill:#ddd6fe,stroke:#6d28d9,stroke-width:3px,color:#0f172a
+    style META fill:#f1f5f9,stroke:#475569,stroke-width:2px,stroke-dasharray:6 4,color:#0f172a
+    style G fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+```
+
+### m3xabr — Brazil (PT-BR)
+
+```mermaid
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '22px', 'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'}, 'flowchart': {'htmlLabels': true, 'curve': 'basis', 'nodeSpacing': 55, 'rankSpacing': 80, 'padding': 18}}}%%
+flowchart TB
+    BOT(["<b>👤 @M3xabr_bot · web</b><br/>Pergunta em PT-BR"]) --> CLS["<b>soul_classifier</b><br/>product = <b>m3xabr</b><br/>tags ⊂ {polymarket_data · price_action · trend · performance}"]
+    CLS --> RTR["<b>router</b> (m3xabr/routing.yaml)<br/>priority: polymarket &gt; charts<br/><b>max 2 modules</b>"]
+
+    subgraph ALWAYS["<b>🟦 SEMPRE CARREGADO · 1,203 tok</b>"]
+        direction TB
+        A1["<b>core.md · 699 tok</b><br/>identidade (PT-BR) · fundamentação<br/>tempo · citação"]
+        A2["<b>overlay.md · 344 tok</b><br/>Tiers de fontes T1/T2/T3<br/>regras rígidas de identidade<br/>câmbio · pesquisas"]
+        A3["<b>examples.md · 160 tok</b><br/>exemplos canônicos em PT-BR"]
+        A1 --> A2 --> A3
+    end
+
+    subgraph COND["<b>🟨 CONDICIONAL · roteado pelo classificador · max 2</b>"]
+        direction TB
+        P["<b>polymarket.md · 119 tok</b> · priority 1<br/>tag: <b>polymarket_data</b><br/>(definido pelo Gateway quando há dados PM)"]
+        CH["<b>charts.md · 108 tok</b> · priority 2<br/>tags: price_action · trend · performance"]
+        BB["<b>brazilbrief.md · 320 tok budget</b> · priority 3<br/><b>⚠️ enabled: false — DEPRIORITIZED</b><br/>no repo mas nunca carregado"]
+    end
+
+    subgraph OUTBLK["<b>🟩 SAÍDA · sempre por ÚLTIMO</b>"]
+        direction TB
+        OUT["<b>output.md · 142 tok</b><br/>formato Telegram BR<br/>tabelas &lt;pre&gt; max 30 chars · sem ## headers"]
+    end
+
+    RTR --> ALWAYS
+    ALWAYS --> COND
+    COND --> OUTBLK
+    OUTBLK --> MODEL["<b>🧠 Modelo</b><br/>default: <b>Claude Haiku 4.5</b><br/>overrides: {} (nenhum por enquanto)"]
+    MODEL --> CACHE["<b>💾 Bedrock prompt cache</b><br/>1h TTL · cache_control no prefixo estático<br/>data context vai na user message"]
+    CACHE --> GEN(["<b>📤 Resposta no Telegram</b>"])
+
+    META["<b>📊 Perfil de orçamento</b><br/>WORST CASE (polymarket + charts): <b>1,572 tok</b><br/>TÍPICO (sem tags): 1,345 tok<br/>BUDGET: 2,600 tok"]
+    GEN -.-> META
+
+    NOTE["<b>📌 Notas específicas do m3xabr</b><br/>• Sem módulo geo — geo queries roteadas pra m3xa<br/>• Sem schema estruturado — Haiku livre<br/>• brazilbrief mantido por spec, mas <b>NÃO carregado</b><br/>(bastidores narrativo voltará via Sonnet override)"]
+    META -.-> NOTE
+
+    style ALWAYS fill:#dbeafe,stroke:#1e40af,stroke-width:3px,color:#0f172a
+    style COND fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#0f172a
+    style OUTBLK fill:#dcfce7,stroke:#166534,stroke-width:3px,color:#0f172a
+    style MODEL fill:#fed7aa,stroke:#c2410c,stroke-width:3px,color:#7c2d12
+    style CACHE fill:#ddd6fe,stroke:#6d28d9,stroke-width:3px,color:#0f172a
+    style META fill:#f1f5f9,stroke:#475569,stroke-width:2px,stroke-dasharray:6 4,color:#0f172a
+    style NOTE fill:#fae8ff,stroke:#a21caf,stroke-width:2px,stroke-dasharray:6 4,color:#0f172a
+    style P fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style CH fill:#fef9c3,stroke:#b45309,stroke-width:2px,color:#0f172a
+    style BB fill:#e5e7eb,stroke:#9ca3af,stroke-width:2px,stroke-dasharray:5 5,color:#475569
+```
+
 ## v3.1 upgrades
 - **Two products**: `assemble("m3xa"|"m3xabr", tags)` — fully isolated soul stacks.
 - **Prompt caching (Bedrock, 1h TTL)**: `bedrock_payload()` returns system blocks with
